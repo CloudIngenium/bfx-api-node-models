@@ -1,6 +1,6 @@
 import CRC from 'crc-32'
 import { EventEmitter } from 'node:events'
-import { preparePrice } from 'bfx-api-node-util'
+import { preparePrice } from './util/precision.js'
 
 export class OrderBook extends EventEmitter {
   raw: boolean

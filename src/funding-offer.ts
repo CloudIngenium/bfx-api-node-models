@@ -5,7 +5,7 @@ import { stringValidator } from './validators/string.js'
 import { boolValidator } from './validators/bool.js'
 import { symbolValidator } from './validators/symbol.js'
 import { Model } from './model.js'
-import { prepareAmount, preparePrice } from 'bfx-api-node-util'
+import { prepareAmount, preparePrice } from './util/precision.js'
 
 const boolFields = ['notify', 'hidden', 'renew']
 const fields = {

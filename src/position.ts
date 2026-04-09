@@ -1,4 +1,4 @@
-import { prepareAmount, preparePrice } from 'bfx-api-node-util'
+import { prepareAmount, preparePrice } from './util/precision.js'
 
 import { numberValidator } from './validators/number.js'
 import { symbolValidator } from './validators/symbol.js'
