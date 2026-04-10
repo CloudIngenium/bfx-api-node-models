@@ -30,8 +30,13 @@ npm run lint:fix # ESLint auto-fix
 
 ## Dependencies
 
-- `bfx-api-node-util` — Bitfinex utility functions
+- `bignumber.js` — arbitrary-precision arithmetic
 - `crc-32` — CRC32 checksums for OrderBook verification
+
+Precision helpers (`prepareAmount`, `preparePrice`) live in `src/util/precision.ts` —
+do **not** re-introduce `bfx-api-node-util` as a runtime dep. It is CJS and breaks
+Node 24 ESM named imports (caused the 10.0.0 publish bug). The `postbuild` guard at
+`scripts/check-dist.mjs` will fail the build if any `dist/*.js` ever imports it again.
 
 ## Consumers
 

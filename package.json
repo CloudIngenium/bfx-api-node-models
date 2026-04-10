@@ -1,7 +1,7 @@
 {
   "name": "@cloudingenium/bfx-api-node-models",
-  "version": "10.0.0",
-  "description": "TypeScript models for the Bitfinex API — CloudIngenium modernized fork",
+  "version": "10.0.4",
+  "description": "TypeScript models for the Bitfinex API \u2014 CloudIngenium modernized fork",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -21,6 +21,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
+    "postbuild": "node scripts/check-dist.mjs",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "test": "npm run build && npm run unit",
@@ -53,7 +54,6 @@
   },
   "homepage": "https://github.com/CloudIngenium/bfx-api-node-models#readme",
   "dependencies": {
-    "bfx-api-node-util": "^1.0.10",
     "bignumber.js": "^9.3.1",
     "crc-32": "^1.2.0"
   },

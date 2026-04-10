@@ -11,12 +11,30 @@ pair: 0,
 }
 
 export class SymbolDetails extends Model {
+  /**
+   * Derived: whether the symbol supports margin trading. True iff the
+   * Bitfinex response included margin info (initialMargin / minimumMargin).
+   * Set in the constructor after the base Model assigns parsed fields.
+   */
+  margin: boolean = false
+
   constructor (data: unknown = {}) {
     super({ data, fields })
+    this.margin = this.initialMargin != null && this.minimumMargin != null
   }
 
   static unserialize (data: unknown): Record<string, unknown> | Record<string, unknown>[] {
-    return super.unserialize({ data, fields })
+    const result = super.unserialize({ data, fields })
+    // Inject the derived `margin` boolean into the plain-object form too,
+    // so consumers using transform: false / unserialize() see it.
+    if (Array.isArray(result)) {
+      for (const row of result) {
+        row.margin = row.initialMargin != null && row.minimumMargin != null
+      }
+    } else if (result && typeof result === 'object') {
+      result.margin = result.initialMargin != null && result.minimumMargin != null
+    }
+    return result
   }
 
   static validate (data: unknown): Error | null {
