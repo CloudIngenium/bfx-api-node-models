@@ -6,7 +6,7 @@ TypeScript models for the Bitfinex API — CloudIngenium modernized fork.
 
 - **Runtime**: Node.js >= 24, TypeScript ~6.0, ESM-only
 - **Build**: `tsc` -> `dist/`
-- **Test**: Mocha + c8 coverage (85% line/function/statement, 55% branch)
+- **Test**: **None currently.** The original Bitfinex CJS test suite under `test/` was deleted during the TS migration cleanup — it was 50 orphan `.js` files that the mocha runner (`test/**/*.ts`) never picked up, depending on packages we no longer ship (`lodash`, `bfx-hf-util`, `bfx-api-node-rest` upstream, `bfx-api-node-util`). **TODO**: rewrite key model tests in TypeScript (`test/**/*.ts`) and re-add `mocha`, `c8`, `tsx`, `@types/mocha` to devDependencies. Until then, `npm test` is a no-op stub.
 - **Lint**: ESLint 9 + typescript-eslint
 - **Package**: `@cloudingenium/bfx-api-node-models` (GitHub Packages, internal visibility)
 

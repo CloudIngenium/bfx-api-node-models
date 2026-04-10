@@ -13,7 +13,7 @@ interface AssignParams {
   target: AssignTarget
 }
 
-export function assignFromCollectionOrInstance ({ data, fields, boolFields, target }: AssignParams): void {
+export function assignFromCollectionOrInstance ({ data, fields: _fields, boolFields: _boolFields, target }: AssignParams): void {
   if (!Array.isArray(data) && typeof data === 'object' && data !== null) {
     Object.assign(target, data)
   } else if (Array.isArray(data) && data.length > 0) {
