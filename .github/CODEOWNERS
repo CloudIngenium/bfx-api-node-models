@@ -1,0 +1,14 @@
+# Require owner review for CI/CD and security-sensitive files.
+# Prevents unauthorized workflow changes (supply chain attack vector).
+
+# Default owner — all files
+* @JCBauza
+
+# GitHub Actions workflows
+.github/workflows/ @JCBauza
+
+# Dependabot / security config
+dependabot.yml @JCBauza
+
+# This file itself
+CODEOWNERS @JCBauza

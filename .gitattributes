@@ -1,0 +1,35 @@
+# Ensure consistent line endings across all platforms.
+# Prevents phantom diffs and merge conflicts from CRLF/LF mixing.
+* text=auto eol=lf
+
+# Source
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.astro text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+
+# Config
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Binary — never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
