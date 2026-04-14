@@ -1,0 +1,17 @@
+name: Socket Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: socket-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  socket:
+    uses: CloudIngenium/.github/.github/workflows/socket-security.yml@main
+    secrets: inherit
+
