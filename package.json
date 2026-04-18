@@ -1,7 +1,7 @@
 {
   "name": "@cloudingenium/bfx-api-node-models",
   "version": "10.0.4",
-  "description": "TypeScript models for the Bitfinex API \u2014 CloudIngenium modernized fork",
+  "description": "TypeScript models for the Bitfinex API — CloudIngenium modernized fork",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -64,5 +64,14 @@
   },
   "publishConfig": {
     "@cloudingenium:registry": "https://npm.pkg.github.com"
+  },
+  "packageManager": "pnpm@10.15.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "@swc/core",
+      "better-sqlite3"
+    ]
   }
 }

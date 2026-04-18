@@ -4,3 +4,8 @@ dist/
 coverage/
 .nyc_output/
 *.tgz
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log*
+pnpm-store/
