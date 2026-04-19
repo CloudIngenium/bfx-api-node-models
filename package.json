@@ -1,7 +1,7 @@
 {
   "name": "@cloudingenium/bfx-api-node-models",
   "version": "10.0.4",
-  "description": "TypeScript models for the Bitfinex API — CloudIngenium modernized fork",
+  "description": "TypeScript models for the Bitfinex API \u2014 CloudIngenium modernized fork",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -24,7 +24,7 @@
     "postbuild": "node scripts/check-dist.mjs",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "npm run build && echo 'No unit tests defined yet — see TODO in CLAUDE.md'",
+    "test": "npm run build && echo 'No unit tests defined yet \u2014 see TODO in CLAUDE.md'",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.12.2",
-    "eslint": "^9.0.0",
+    "eslint": "^10.2.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.2"
   },
