@@ -1,0 +1,1 @@
+../../../.claude/rules/dotnet-auth.md
