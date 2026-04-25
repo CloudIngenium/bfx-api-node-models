@@ -8,6 +8,9 @@ updates:
       time: "06:00"
       timezone: "America/Panama"
     groups:
+      all-security:
+        applies-to: security-updates
+        patterns: ["*"]
       all-dependencies:
         patterns: ["*"]
         update-types: ["minor", "patch"]
@@ -21,6 +24,9 @@ updates:
       time: "06:00"
       timezone: "America/Panama"
     groups:
+      all-security:
+        applies-to: security-updates
+        patterns: ["*"]
       all-actions:
         patterns: ["*"]
     labels: ["dependencies", "automerge"]
