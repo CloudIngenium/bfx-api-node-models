@@ -16,6 +16,9 @@ updates:
         update-types: ["minor", "patch"]
     open-pull-requests-limit: 10
     labels: ["dependencies", "automerge"]
+    commit-message:
+      prefix: chore
+      include: scope
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -30,3 +33,6 @@ updates:
       all-actions:
         patterns: ["*"]
     labels: ["dependencies", "automerge"]
+    commit-message:
+      prefix: chore
+      include: scope
