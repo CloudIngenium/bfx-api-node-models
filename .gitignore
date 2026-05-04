@@ -9,3 +9,6 @@ coverage/
 .pnpm-store/
 .pnpm-debug.log*
 pnpm-store/
+
+# Per-session git worktrees (autonomy-contract.md doctrine, scratch space only).
+.worktrees/
