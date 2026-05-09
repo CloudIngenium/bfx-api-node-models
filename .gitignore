@@ -12,3 +12,7 @@ pnpm-store/
 
 # Per-session git worktrees (autonomy-contract.md doctrine, scratch space only).
 .worktrees/
+
+# OS + git scratch (fleet baseline)
+.DS_Store
+Thumbs.db
