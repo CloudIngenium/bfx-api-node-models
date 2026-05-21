@@ -1,6 +1,13 @@
 version: 2
+registries:
+  github-cloudingenium-npm:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
 updates:
   - package-ecosystem: "npm"
+    registries:
+      - github-cloudingenium-npm
     directory: "/"
     schedule:
       interval: "weekly"
