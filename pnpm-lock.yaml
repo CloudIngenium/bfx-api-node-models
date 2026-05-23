@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       bignumber.js:
-        specifier: ^9.3.1
-        version: 9.3.1
+        specifier: ^11.1.1
+        version: 11.1.1
       crc-32:
         specifier: ^1.2.2
         version: 1.2.2
@@ -168,8 +168,8 @@ packages:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
 
-  bignumber.js@9.3.1:
-    resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
+  bignumber.js@11.1.1:
+    resolution: {integrity: sha512-LNkCYMieJqAts/Sj5094B92c5q+yRPlXWpABJnHMbUjB/F8AUjELmSmYX5mxbNiY/QnGnJvJIrnRuW5gUqbW5Q==}
 
   brace-expansion@5.0.6:
     resolution: {integrity: sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g==}
@@ -586,7 +586,7 @@ snapshots:
 
   balanced-match@4.0.4: {}
 
-  bignumber.js@9.3.1: {}
+  bignumber.js@11.1.1: {}
 
   brace-expansion@5.0.6:
     dependencies:
