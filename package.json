@@ -53,7 +53,7 @@
   },
   "homepage": "https://github.com/CloudIngenium/bfx-api-node-models#readme",
   "dependencies": {
-    "bignumber.js": "^9.3.1",
+    "bignumber.js": "^11.1.1",
     "crc-32": "^1.2.2"
   },
   "devDependencies": {
