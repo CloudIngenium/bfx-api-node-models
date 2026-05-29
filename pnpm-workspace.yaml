@@ -1,0 +1,21 @@
+autoInstallPeers: true
+publicHoistPattern:
+  - '*@types*'
+  - '*eslint*'
+  - '*prettier*'
+resolutionMode: time-based
+auditSignatures: true
+minimumReleaseAge: 3
+minimumReleaseAgeExclude:
+  - '@cloudingenium/*'
+  - '@cloudflare/*'
+  - wrangler
+  - workerd
+verifyStoreIntegrity: true
+lockfileCheck: true
+allowBuilds:
+  esbuild: true
+  sharp: true
+  '@swc/core': true
+  better-sqlite3: true
+strictDepBuilds: false
