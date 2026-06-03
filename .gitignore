@@ -16,3 +16,6 @@ pnpm-store/
 # OS + git scratch (fleet baseline)
 .DS_Store
 Thumbs.db
+
+# pnpm sync writes KH rule copies here (KH is source of truth); never commit
+.claude/rules/
