@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "source": "GET https://api-pub.bitfinex.com/v2/status/deriv?keys=tBTCF0:USTF0",
+    "recorded": "2026-07-05",
+    "note": "Public, unauthenticated, no-money endpoint. Values are live market data, not synthetic — captured to ground-truth the StatusMessagesDeriv truth-table completion (F5)."
+  },
+  "payload": [
+    "tBTCF0:USTF0",
+    1783282202000,
+    null,
+    62857.66339128,
+    62831,
+    null,
+    65988203.26614869,
+    null,
+    1783296000000,
+    0.00029851,
+    4811,
+    null,
+    0.00016064,
+    null,
+    null,
+    62824.4147,
+    null,
+    null,
+    8901.42706852,
+    null,
+    null,
+    null,
+    0.0005,
+    0.0025
+  ],
+  "expected": {
+    "key": "tBTCF0:USTF0",
+    "timestamp": 1783282202000,
+    "price": 62857.66339128,
+    "priceSpot": 62831,
+    "fundBal": 65988203.26614869,
+    "nextFundingEvtMts": 1783296000000,
+    "fundingAccrued": 0.00029851,
+    "fundingStep": 4811,
+    "currentFunding": 0.00016064,
+    "markPrice": 62824.4147,
+    "openInterest": 8901.42706852,
+    "clampMin": 0.0005,
+    "clampMax": 0.0025
+  }
+}

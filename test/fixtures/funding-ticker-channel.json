@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "source": "Derived from the same live capture as funding-ticker.json (GET https://api-pub.bitfinex.com/v2/tickers?symbols=fUSD, recorded 2026-07-05), reshaped to the WS `fticker` channel wire format per docs.bitfinex.com/reference/ws-public-ticker: drop SYMBOL (channel-scoped), shift every field left by 1, drop FIRST_TRADE (REST-only — WS returns null and it isn't modeled here).",
+    "recorded": "2026-07-05"
+  },
+  "payload": [
+    0.0003708931506849315,
+    0.00030136986301369865,
+    120,
+    27602507.19668174,
+    0.0001383658,
+    2,
+    109932.77314575,
+    -0.00009797,
+    -0.3919,
+    0.00015203,
+    139712327.81070325,
+    0.00037338,
+    0.00007945,
+    null,
+    null,
+    67239554.91538163
+  ],
+  "expected": {
+    "frr": 0.0003708931506849315,
+    "bid": 0.00030136986301369865,
+    "bidPeriod": 120,
+    "bidSize": 27602507.19668174,
+    "ask": 0.0001383658,
+    "askPeriod": 2,
+    "askSize": 109932.77314575,
+    "dailyChange": -0.00009797,
+    "dailyChangePerc": -0.3919,
+    "lastPrice": 0.00015203,
+    "volume": 139712327.81070325,
+    "high": 0.00037338,
+    "low": 0.00007945,
+    "frrAmountAvailable": 67239554.91538163
+  }
+}
