@@ -6,7 +6,7 @@ TypeScript models for the Bitfinex API — CloudIngenium modernized fork.
 
 - **Runtime**: Node.js >= 24, TypeScript ~6.0, ESM-only
 - **Build**: `tsc` -> `dist/`
-- **Test**: **None currently.** The original Bitfinex CJS test suite under `test/` was deleted during the TS migration cleanup — it was 50 orphan `.js` files that the mocha runner (`test/**/*.ts`) never picked up, depending on packages we no longer ship (`lodash`, `bfx-hf-util`, `bfx-api-node-rest` upstream, `bfx-api-node-util`). **TODO**: rewrite key model tests in TypeScript (`test/**/*.ts`) and re-add `mocha`, `c8`, `tsx`, `@types/mocha` to devDependencies. Until then, `npm test` is a no-op stub.
+- **Test**: `node --test 'test/**/*.test.ts'` against the **built `dist/`** (Node 24's native TS type-stripping only erases types — it does not resolve a `.js` import specifier to a sibling `.ts` file, and this repo's `NodeNext` resolution imports everything with a `.js` extension — so tests import compiled output, not `src/`). Zero test-framework dependencies: Node 24's built-in `node:test`/`node:assert` runner is sufficient, matching the repo's minimal-deps philosophy. Fixtures live in `test/fixtures/*.json` — recorded real (public, unauthenticated, no-money) Bitfinex payloads per the positional-decoder-adoption design doc's F5 fence, not synthetic arrays. See `docs/positional-index-truth-table.md` for the normative per-channel index reference these tests assert against.
 - **Lint**: ESLint 9 + typescript-eslint
 - **Package**: `@cloudingenium/bfx-api-node-models` (GitHub Packages, internal visibility)
 
