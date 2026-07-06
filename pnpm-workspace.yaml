@@ -9,6 +9,7 @@ minimumReleaseAge: 3
 minimumReleaseAgeExclude:
   - '@cloudingenium/*'
   - '@cloudflare/*'
+  - typescript-eslint
   - wrangler
   - workerd
 verifyStoreIntegrity: true
