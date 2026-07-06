@@ -12,7 +12,6 @@ minimumReleaseAgeExclude:
   - wrangler
   - workerd
 verifyStoreIntegrity: true
-lockfileCheck: true
 allowBuilds:
   esbuild: true
   sharp: true
