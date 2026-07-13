@@ -24,7 +24,7 @@ jobs:
         node-version: [24]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: CloudIngenium/astro-shared/.github/actions/setup-pnpm@04d7d5f30945883f8b5224eab424d53484eef4f2 # central pnpm bootstrap
+      - uses: CloudIngenium/.github/.github/actions/setup-node-pnpm@497ffd6fc41c14f7ce8d3143563013e28dc267a3 # v1
         with:
           node-version: ${{ matrix.node-version }}
       - run: pnpm install --frozen-lockfile
