@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: socket-${{ github.ref }}
   cancel-in-progress: true
