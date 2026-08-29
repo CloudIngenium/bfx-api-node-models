@@ -3,9 +3,10 @@ publicHoistPattern:
   - '*@types*'
   - '*eslint*'
   - '*prettier*'
-resolutionMode: time-based
+resolutionMode: highest
 auditSignatures: true
-minimumReleaseAge: 3
+# pnpm expresses this value in minutes: 4,320 = three days (fleet standard).
+minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@cloudingenium/*'
   - '@cloudflare/*'
@@ -21,4 +22,6 @@ allowBuilds:
   better-sqlite3: true
 strictDepBuilds: false
 overrides:
-  brace-expansion@<=5.0.7: 5.0.8
+  # CVE-2026-69152 / GHSA-rgw5-rvv9-x895: 5.0.8's mitigation for CVE-2026-14257
+  # is incomplete. Floor matches astro-shared/standards/security/pnpm-security-overrides.yaml.
+  brace-expansion@<=5.0.8: 5.0.9
