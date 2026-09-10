@@ -25,3 +25,7 @@ overrides:
   # CVE-2026-69152 / GHSA-rgw5-rvv9-x895: 5.0.8's mitigation for CVE-2026-14257
   # is incomplete. Floor matches astro-shared/standards/security/pnpm-security-overrides.yaml.
   brace-expansion@<=5.0.8: 5.0.9
+registries:
+  default: https://registry.npmjs.org/
+  '@types': https://registry.npmjs.org/
+  '@cloudingenium': https://npm.pkg.github.com/
