@@ -4,28 +4,108 @@ publicHoistPattern:
   - '*eslint*'
   - '*prettier*'
 resolutionMode: highest
-auditSignatures: true
 # pnpm expresses this value in minutes: 4,320 = three days (fleet standard).
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@cloudingenium/*'
   - '@cloudflare/*'
-  - typescript-eslint
+  - '@cloudflare/workers-types'
   - wrangler
   - workerd
+  - miniflare
+  - '@arethetypeswrong/*'
+  - lucide-react
+  - react-i18next
+  - i18next
+  - eslint
+  - ignore
+  - prettier
+  - '@esbuild/*'
+  - '@astrojs/*'
+  - astro
+  - basic-ftp
   - brace-expansion
+  - browserslist
+  - devalue
+  - esbuild
+  - fflate
+  - fast-uri
+  - flatted
+  - hono
+  - ip-address
+  - minimatch
+  - qs
+  - tar-fs
+  - undici
+  - vite
+  - ws
+  - '@hono/node-server'
+  - yaml
+  - tmp
+  - uuid
+  - nanoid
+  - dompurify
+  - defu
+  - postcss
+  - '@babel/core'
+  - '@typescript-eslint/eslint-plugin'
+  - '@typescript-eslint/parser'
+  - baseline-browser-mapping
+  - js-yaml
+  - sharp
+  - smol-toml
+  - svgo
+  - vitest
 verifyStoreIntegrity: true
 allowBuilds:
   esbuild: true
   sharp: true
   '@swc/core': true
   better-sqlite3: true
+  workerd: true
 strictDepBuilds: false
 overrides:
   # CVE-2026-69152 / GHSA-rgw5-rvv9-x895: 5.0.8's mitigation for CVE-2026-14257
   # is incomplete. Floor matches astro-shared/standards/security/pnpm-security-overrides.yaml.
   brace-expansion@<=5.0.8: 5.0.9
+  astro: '>=7.2.8 <8'
+  baseline-browser-mapping: '>=2.11.0 <3'
+  basic-ftp: '>=5.3.1 <6'
+  brace-expansion: '>=5.0.9 <6'
+  browserslist: '>=4.28.8 <5'
+  devalue: '>=5.9.2 <6'
+  dompurify: '>=3.4.13 <4'
+  esbuild: '>=0.28.1'
+  fflate: '>=0.7.5 <0.8 || >=0.8.3 <0.9'
+  fast-uri: '>=3.1.7 <4'
+  flatted: '>=3.4.2'
+  hono: '>=4.13.5 <5'
+  js-yaml: '>=4.3.2 <5'
+  ip-address: '>=10.3.1 <11'
+  minimatch: '>=10.2.5 <11'
+  nanoid: '>=3.3.18 <4'
+  postcss: '>=8.5.23 <9'
+  sharp: '>=0.35.4 <0.36'
+  smol-toml: '>=1.7.1 <2'
+  svgo: '>=4.1.0 <5'
+  tmp: '>=0.2.7 <1'
+  tar-fs: '>=3.1.1'
+  undici: '>=7.29.0 <8'
+  uuid: '>=14.0.1 <15'
+  vite: '>=8.1.4 <9'
+  vitest: '>=4.1.11 <5'
+  ws: '>=8.21.0 <9'
+  '@hono/node-server': '>=2.0.11 <3'
+  qs: '>=6.16.0 <7'
+  yaml: '>=2.8.3'
+  defu: '>=6.1.7'
+  '@babel/core': '>=7.29.6'
+  '@typescript-eslint/eslint-plugin': ^8.63.0
+  '@typescript-eslint/parser': ^8.63.0
 registries:
   default: https://registry.npmjs.org/
   '@types': https://registry.npmjs.org/
   '@cloudingenium': https://npm.pkg.github.com/
+peerDependencyRules:
+  allowedVersions:
+    partyserver@0.5.8>@cloudflare/workers-types: '>=4.20260424.1 <6'
