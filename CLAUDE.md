@@ -20,6 +20,20 @@ npm run lint     # ESLint check
 npm run lint:fix # ESLint auto-fix
 ```
 
+## Releasing
+
+Push a `v<version>` tag matching `package.json`; `.github/workflows/publish.yml`
+runs the full suite, refuses a tag whose version disagrees with the manifest,
+and publishes to GitHub Packages. **Bump the version in the PR, tag after it
+merges** — never publish by hand.
+
+That workflow did not exist until 10.2.0: 10.0.0–10.1.1 were published manually,
+so master could sit several merged PRs ahead of what consumers on `^10.1.1`
+actually resolved, with nothing reporting the gap. If you add a feature here,
+the job is not done when the PR merges — check
+`npm view @cloudingenium/bfx-api-node-models version --registry=https://npm.pkg.github.com`
+against `package.json`.
+
 ## Architecture
 
 - `src/model.ts` — Base Model class (serialize/unserialize/toJS)
