@@ -26,7 +26,7 @@ export class TradingTickerHist extends Model {
         symbol: symbolValidator,
         bid: priceValidator,
         ask: priceValidator,
-        mtsUpdated: dateValidator
+        mtsUpdate: dateValidator
       }
     })
   }

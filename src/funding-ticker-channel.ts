@@ -1,6 +1,8 @@
 import { numberValidator } from './validators/number.js'
 import { amountValidator } from './validators/amount.js'
 import { priceValidator } from './validators/price.js'
+import { dateValidator } from './validators/date.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 // Field indices per docs.bitfinex.com/reference/ws-public-ticker (funding
@@ -8,11 +10,15 @@ import { Model } from './model.js'
 //
 // This is the WS `fticker` channel payload — NOT the REST /tickers row
 // (`FundingTicker`). The channel message is subscription-scoped so it omits
-// SYMBOL, and (being a WS push, not a REST snapshot) has no FIRST_TRADE.
-// Every other field is at index-1 relative to the REST array. This is the
-// funding-channel model gap named in the design doc — LendingBot's
+// SYMBOL, so every field sits at index-1 relative to the REST array. This is
+// the funding-channel model gap named in the design doc — LendingBot's
 // WebSocketManager._process_funding_ticker() hand-decodes this exact shape
 // (data[0..9]) today, missing volume/high/low/frrAmountAvailable.
+//
+// FIRST_TRADE (index 16) reaches this channel too: a live capture of
+// `{event:'subscribe',channel:'ticker',symbol:'fUSD'}` on 2026-09-25 returned
+// a 17-element push ending in 1469734163000. An earlier revision of this file
+// asserted the field was REST-only; that was wrong.
 const fields = {
   frr: 0,
   bid: 1,
@@ -27,7 +33,8 @@ const fields = {
   volume: 10,
   high: 11,
   low: 12,
-  frrAmountAvailable: 15
+  frrAmountAvailable: 15,
+  firstTrade: 16
 }
 
 export class FundingTickerChannel extends Model {
@@ -56,7 +63,8 @@ export class FundingTickerChannel extends Model {
         volume: numberValidator,
         high: priceValidator,
         low: priceValidator,
-        frrAmountAvailable: amountValidator
+        frrAmountAvailable: amountValidator,
+        firstTrade: nullable(dateValidator)
       }
     })
   }

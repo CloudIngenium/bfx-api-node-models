@@ -147,8 +147,18 @@ export class Model extends EventEmitter {
     const keys = Object.keys(validators)
 
     for (const key of keys) {
+      // A validator whose key is absent from `fields` can never read the
+      // right slot — it would index the array with `undefined` and report a
+      // spurious failure for every input. That is a typo in the model, not a
+      // data problem, so surface it as one.
+      if (!(key in fields)) {
+        return new Error(`${key}: no field index declared for this validator`)
+      }
+
       const instanceValue = Array.isArray(data)
-        ? (data as unknown[])[fields[key] as number]
+        ? getNestedValue(data, Array.isArray(fields[key])
+          ? fields[key] as number[]
+          : [fields[key] as number])
         : (data as Record<string, unknown>)[key]
 
       if (typeof validators[key] === 'function') {

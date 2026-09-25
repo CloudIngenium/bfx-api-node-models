@@ -6,7 +6,7 @@
 
 - Node ≥ 24, TypeScript ~6.0, ESM-only.
 - `npm run build` — clean + `tsc` to `dist/`.
-- `npm test` — currently a no-op stub. The original Bitfinex CJS test suite was removed during TS migration; tests need to be rewritten in TypeScript (`test/**/*.ts`) with `mocha`/`c8`/`tsx`/`@types/mocha` re-added to devDependencies. **Do not assume `npm test` validates anything until rewrites land.**
+- `npm test` — builds, then runs the real suite: `node --test --experimental-test-coverage` over `test/**/*.test.ts`, with the coverage gate set to 100% lines/branches/functions. Tests are TypeScript and import the **built `dist/`**, never `src/` — zero test-framework deps, just Node 24's `node:test`/`node:assert`. Note the gate only measures files the suite loads, so it ratchets what is already covered and says nothing about the source files no test imports yet.
 - `npm run lint` / `npm run lint:fix` — ESLint 9 + typescript-eslint.
 - Published as `@cloudingenium/bfx-api-node-models` on GitHub Packages (internal visibility).
 

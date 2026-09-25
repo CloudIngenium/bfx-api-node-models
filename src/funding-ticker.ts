@@ -3,6 +3,7 @@ import { amountValidator } from './validators/amount.js'
 import { priceValidator } from './validators/price.js'
 import { symbolValidator } from './validators/symbol.js'
 import { dateValidator } from './validators/date.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 // Field indices per docs.bitfinex.com/reference/rest-public-tickers (funding
@@ -61,7 +62,7 @@ export class FundingTicker extends Model {
         high: priceValidator,
         low: priceValidator,
         frrAmountAvailable: amountValidator,
-        firstTrade: dateValidator
+        firstTrade: nullable(dateValidator)
       }
     })
   }

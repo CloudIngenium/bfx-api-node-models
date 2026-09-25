@@ -1,9 +1,20 @@
 import { numberValidator } from './validators/number.js'
 import { stringValidator } from './validators/string.js'
+import { dateValidator } from './validators/date.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
+// One `pub:info:pair` / `pub:info:pair:futures` row: [PAIR, [ ...details ]].
+// Spot rows carry 12 details and futures rows 10; the unmapped slots are
+// reserved placeholders. Live-verified 2026-09-25 against both configs.
+//
+// firstTrade ([1, 0]) started carrying a value on 2026-09-23 — the slot had
+// always held null before, which is why it was never mapped. It stays null
+// for a pair with no executed trades. initialMargin/minimumMargin are null
+// on non-margin spot pairs, hence the nullable validators.
 const fields = {
 pair: 0,
+  firstTrade: [1, 0],
   initialMargin: [1, 8],
   minimumMargin: [1, 9],
   maximumOrderSize: [1, 4],
@@ -42,8 +53,9 @@ export class SymbolDetails extends Model {
       data, fields,
       validators: {
         pair: stringValidator,
-        initialMargin: numberValidator,
-        minimumMargin: numberValidator,
+        firstTrade: nullable(dateValidator),
+        initialMargin: nullable(numberValidator),
+        minimumMargin: nullable(numberValidator),
         maximumOrderSize: stringValidator,
         minimumOrderSize: stringValidator
       }

@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "source": "GET https://api-pub.bitfinex.com/v2/tickers/hist?symbols=fUSD&limit=1 — queried 2026-09-25, returned [] (empty). That endpoint serves TRADING rows only: GET /v2/tickers/hist?symbols=ALL&limit=250 returned 250 rows, all 13 elements wide, zero f-prefixed. The funding hist wire shape therefore CANNOT be recorded live today. Real values below come from the sibling endpoint that does serve funding, GET https://api-pub.bitfinex.com/v2/tickers?symbols=fUSD (captured 2026-09-25T18:16:23Z): [\"fUSD\",0.00030861643835616436,0.000273972602739726,120,17006656.02360311,0.00017538972,2,2311067.63616202,-0.0001445,-0.4661,0.0001655,295382549.6420872,0.00035,0.000028,null,null,120627362.43406533,1469734163000] — BID, BID_PERIOD and ASK are lifted from it verbatim. MTS_UPDATE is the real hist timestamp from the same-date tBTCUSD hist capture in trading-ticker-hist.json. Undeclared slots are null, mirroring the shape the hist endpoint actually returns for trading rows.",
+    "recorded": "2026-09-25",
+    "elements": 16,
+    "unverified": "Slot 4 for BID_PERIOD is the index src/funding-ticker-hist.ts declares, NOT a live-verified one. The full funding ticker puts BID_PERIOD at index 3 (BID_SIZE at 4), so this map may carry an off-by-one inherited from upstream. It cannot be confirmed while /v2/tickers/hist serves no funding rows, so the fixture encodes the model as declared rather than guessing a correction. Re-record and re-check if Bitfinex ever adds funding rows to that endpoint."
+  },
+  "payload": [
+    "fUSD",
+    null,
+    0.000273972602739726,
+    null,
+    120,
+    0.00017538972,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1790359209000
+  ],
+  "expected": {
+    "symbol": "fUSD",
+    "bid": 0.000273972602739726,
+    "bidPeriod": 120,
+    "ask": 0.00017538972,
+    "mtsUpdate": 1790359209000
+  }
+}

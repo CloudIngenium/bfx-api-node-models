@@ -1,0 +1,86 @@
+{
+  "_meta": {
+    "source": "Live capture: GET /v2/conf/pub:info:pair and /v2/conf/pub:info:pair:futures. BTCUSD is a margin spot pair, AAVE:USD a non-margin spot pair (null margins), BTCF0:USTF0 a derivative. Spot detail arrays are 12 long, futures 10. Index 0 of the detail array is FIRST_TRADE.",
+    "recorded": "2026-09-25"
+  },
+  "rows": [
+    [
+      "BTCUSD",
+      [
+        1358182043000,
+        null,
+        null,
+        "0.00004",
+        "2000.0",
+        null,
+        null,
+        null,
+        0.1,
+        0.05,
+        null,
+        null
+      ]
+    ],
+    [
+      "AAVE:USD",
+      [
+        1612517298684,
+        null,
+        null,
+        "0.02",
+        "5000.0",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    [
+      "BTCF0:USTF0",
+      [
+        1562164542332,
+        null,
+        null,
+        "0.00004",
+        "100.0",
+        null,
+        null,
+        null,
+        0.01,
+        0.005
+      ]
+    ]
+  ],
+  "expected": [
+    {
+      "pair": "BTCUSD",
+      "firstTrade": 1358182043000,
+      "initialMargin": 0.1,
+      "minimumMargin": 0.05,
+      "maximumOrderSize": "2000.0",
+      "minimumOrderSize": "0.00004",
+      "margin": true
+    },
+    {
+      "pair": "AAVE:USD",
+      "firstTrade": 1612517298684,
+      "initialMargin": null,
+      "minimumMargin": null,
+      "maximumOrderSize": "5000.0",
+      "minimumOrderSize": "0.02",
+      "margin": false
+    },
+    {
+      "pair": "BTCF0:USTF0",
+      "firstTrade": 1562164542332,
+      "initialMargin": 0.01,
+      "minimumMargin": 0.005,
+      "maximumOrderSize": "100.0",
+      "minimumOrderSize": "0.00004",
+      "margin": true
+    }
+  ]
+}
