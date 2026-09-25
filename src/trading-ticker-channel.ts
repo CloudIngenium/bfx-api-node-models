@@ -1,36 +1,38 @@
 import { numberValidator } from './validators/number.js'
 import { amountValidator } from './validators/amount.js'
 import { priceValidator } from './validators/price.js'
-import { symbolValidator } from './validators/symbol.js'
 import { dateValidator } from './validators/date.js'
 import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
-// Field indices per docs.bitfinex.com/reference/rest-public-tickers (trading
-// pair row) — see docs/positional-index-truth-table.md. This is the
-// symbol-prefixed shape: a bare GET /v2/ticker/<sym> row has no SYMBOL, so
-// callers splice it in (RESTv2.ticker does exactly that).
+// Field indices per docs.bitfinex.com/reference/ws-public-ticker (trading
+// pair channel row) — see docs/positional-index-truth-table.md.
 //
-// FIRST_TRADE (index 11) was appended by Bitfinex on 2026-09-23 and is
-// `int | null` — null for a newly listed pair with no executed trades. It is
-// validated as nullable because a peer replaying a pre-append 11-element row
-// leaves it undefined.
+// This is the WS `ticker` channel payload — NOT the REST /tickers row
+// (`TradingTicker`). The channel message is subscription-scoped so it omits
+// SYMBOL, putting every field at index-1 relative to the REST array. The
+// counterpart of `FundingTickerChannel`, added so consumers reading a raw
+// channel push no longer have to hand-decode it (or mis-apply the
+// symbol-prefixed `TradingTicker` map and shift every field by one).
+//
+// FIRST_TRADE sits at index 10: a live capture of
+// `{event:'subscribe',channel:'ticker',symbol:'tBTCUSD'}` on 2026-09-25
+// returned an 11-element push ending in 1358182043000.
 const fields = {
-symbol: 0,
-  bid: 1,
-  bidSize: 2,
-  ask: 3,
-  askSize: 4,
-  dailyChange: 5,
-  dailyChangePerc: 6,
-  lastPrice: 7,
-  volume: 8,
-  high: 9,
-  low: 10,
-  firstTrade: 11
+  bid: 0,
+  bidSize: 1,
+  ask: 2,
+  askSize: 3,
+  dailyChange: 4,
+  dailyChangePerc: 5,
+  lastPrice: 6,
+  volume: 7,
+  high: 8,
+  low: 9,
+  firstTrade: 10
 }
 
-export class TradingTicker extends Model {
+export class TradingTickerChannel extends Model {
   constructor (data: unknown = {}) {
     super({ data, fields })
   }
@@ -39,14 +41,11 @@ export class TradingTicker extends Model {
     return super.unserialize({ data, fields })
   }
 
-  quote (): string { return (this.symbol as string || '').substring(4) }
-  base (): string { return (this.symbol as string || '').substring(1, 4) }
-
   static validate (data: unknown): Error | null {
     return super.validate({
-      data, fields,
+      data,
+      fields,
       validators: {
-        symbol: symbolValidator,
         bid: priceValidator,
         bidSize: amountValidator,
         ask: priceValidator,

@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "source": "Live capture: GET /v2/tickers/hist?symbols=tBTCUSD&limit=1. 13 elements: SYMBOL, BID, _PH, ASK, then eight placeholders, MTS at index 12.",
+    "recorded": "2026-09-25",
+    "elements": 13
+  },
+  "payload": [
+    "tBTCUSD",
+    83780,
+    null,
+    83782,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1790359209000
+  ],
+  "expected": {
+    "symbol": "tBTCUSD",
+    "bid": 83780,
+    "ask": 83782,
+    "mtsUpdate": 1790359209000
+  }
+}

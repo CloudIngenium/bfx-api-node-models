@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "source": "Live capture: GET https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD. The symbol-prefixed REST row; FIRST_TRADE at index 11 was appended by Bitfinex on 2026-09-23.",
+    "recorded": "2026-09-25",
+    "elements": 12
+  },
+  "payload": [
+    "tBTCUSD",
+    84008,
+    2.27229812,
+    84021,
+    2.37547513,
+    -387,
+    -0.00458482,
+    84022,
+    1206.05655789,
+    85172,
+    83157,
+    1358182043000
+  ],
+  "expected": {
+    "symbol": "tBTCUSD",
+    "bid": 84008,
+    "bidSize": 2.27229812,
+    "ask": 84021,
+    "askSize": 2.37547513,
+    "dailyChange": -387,
+    "dailyChangePerc": -0.00458482,
+    "lastPrice": 84022,
+    "volume": 1206.05655789,
+    "high": 85172,
+    "low": 83157,
+    "firstTrade": 1358182043000
+  }
+}

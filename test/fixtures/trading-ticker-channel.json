@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "source": "Live capture of the WS ticker channel: wss://api-pub.bitfinex.com/ws/2, {event:'subscribe',channel:'ticker',symbol:'tBTCUSD'}. Recorded verbatim off the wire \u2014 not reshaped from a REST row. Confirms FIRST_TRADE reaches this channel (index 10).",
+    "recorded": "2026-09-25",
+    "symbol": "tBTCUSD",
+    "elements": 11
+  },
+  "payload": [
+    84007,
+    1.73211519,
+    84017,
+    2.05273194,
+    -397,
+    -0.00470329,
+    84012,
+    1205.92743188,
+    85172,
+    83157,
+    1358182043000
+  ],
+  "expected": {
+    "bid": 84007,
+    "bidSize": 1.73211519,
+    "ask": 84017,
+    "askSize": 2.05273194,
+    "dailyChange": -397,
+    "dailyChangePerc": -0.00470329,
+    "lastPrice": 84012,
+    "volume": 1205.92743188,
+    "high": 85172,
+    "low": 83157,
+    "firstTrade": 1358182043000
+  }
+}

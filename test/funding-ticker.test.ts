@@ -45,3 +45,20 @@ test('FundingTicker — frrAmountAvailable and firstTrade complete the REST arra
   assert.equal(result.frrAmountAvailable, fixture.payload[16])
   assert.equal(result.firstTrade, fixture.payload[17])
 })
+
+test('FundingTicker — the constructor form decodes the same row, and round-trips it', () => {
+  // Consumers build instances (`new FundingTicker(row)`), not only plain
+  // objects via unserialize(), so the constructor path needs its own cover.
+  const model = new FundingTicker(fixture.payload)
+  const asRecord = model as unknown as Record<string, unknown>
+
+  assert.equal(asRecord.symbol, fixture.payload[0])
+  assert.equal(asRecord.frr, fixture.expected.frr)
+  assert.equal(asRecord.bidPeriod, fixture.expected.bidPeriod)
+  assert.equal(asRecord.bidSize, fixture.expected.bidSize)
+  assert.equal(asRecord.firstTrade, fixture.expected.firstTrade)
+
+  // Indices 14 and 15 are reserved on this endpoint; serialize() must refill
+  // them as null so the wire row comes back byte-identical.
+  assert.deepEqual(model.serialize(), fixture.payload)
+})
