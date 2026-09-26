@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: CloudIngenium/ci-actions/setup-node-pnpm@8ff1a2a4ec78c914213ccdb5fb6f530d0c9655e0 # v1
+      - uses: CloudIngenium/ci-actions/setup-node-pnpm@7d65852f30d2466be07cf8b541c1b41648949f89
         with:
           node-version: 24
       - run: pnpm install --frozen-lockfile
