@@ -1,0 +1,65 @@
+# Does Bitfinex still serve the shapes this package's index maps assume?
+#
+# Every model here is a map from a FIELD NAME to a POSITION in an array Bitfinex sends.
+# Nothing in a normal test run consults Bitfinex: the fixtures under test/fixtures/ are
+# captured payloads, compared only against themselves. So when the exchange moves, they
+# keep passing while describing a world that no longer exists — and the test's NAME still
+# claims the coverage. That happened three times in one week (2026-09-23, FIRST_TRADE),
+# and a human reading an announcement caught every instance. This job is the loop that
+# closes it: once a week, ask the exchange.
+#
+# It is deliberately NOT a required check. It watches a third party, so a Bitfinex outage
+# must never block an unrelated merge. The cost of that choice is that nothing reports
+# when it breaks — so the schedule, not a PR, is what proves it still runs.
+name: Bitfinex wire contract
+
+on:
+  schedule:
+    # Wednesdays, offset from the sibling guards in bfx-api-node-rest (06:41),
+    # bitfinex-api-node (06:48) and bitfinex-api-py (06:55) so four repos do not
+    # hit the public API in the same second.
+    - cron: "12 7 * * 3"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'test/wire-contract.test.ts'
+      - 'test/fixtures/**'
+      - 'src/**'
+      - '.github/workflows/wire-contract.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Mirrors ci.yml deliberately rather than trimming to what looks necessary. On 2026-09-26
+# this exact block was trimmed to `contents: read` in two sibling repos; pnpm install then
+# died with ERR_PNPM_FETCH_403 against npm.pkg.github.com, and because the job is not a
+# required check, one of them merged red and stayed broken.
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  live-wire:
+    name: live-wire
+    # ubuntu-24.04, NOT self-hosted — and that is not a style choice. This repository is
+    # PUBLIC, and every CloudIngenium org runner group sets allows_public_repositories=false,
+    # so a self-hosted job here is never ASSIGNED a runner: it queues forever instead of
+    # failing. test/ci/required-check-lanes.test.ts enforces this for every workflow.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: CloudIngenium/ci-actions/setup-node-pnpm@8ff1a2a4ec78c914213ccdb5fb6f530d0c9655e0 # v1
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The tests import from dist/. Without this build they would exercise the LAST
+      # build's index maps, and a wrong map in src/ would report a clean pass.
+      - run: pnpm run build
+      - name: Check the declared wire against the live Bitfinex API
+        env:
+          LIVE_WIRE: '1'
+        run: node --test test/wire-contract.test.ts

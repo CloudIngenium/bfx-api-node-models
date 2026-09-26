@@ -2,6 +2,7 @@
   "_meta": {
     "source": "GET https://api-pub.bitfinex.com/v2/tickers?symbols=fUSD",
     "recorded": "2026-07-05",
+    "elements": 18,
     "note": "Public, unauthenticated, no-money endpoint. Grounds the FundingTicker bidSize/bidPeriod + askSize/askPeriod swap fix and frrAmountAvailable/firstTrade completion (F5)."
   },
   "payload": [

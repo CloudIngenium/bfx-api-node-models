@@ -1,7 +1,8 @@
 {
   "_meta": {
     "source": "Live capture: GET /v2/conf/pub:info:pair and /v2/conf/pub:info:pair:futures. BTCUSD is a margin spot pair, AAVE:USD a non-margin spot pair (null margins), BTCF0:USTF0 a derivative. Spot detail arrays are 12 long, futures 10. Index 0 of the detail array is FIRST_TRADE.",
-    "recorded": "2026-09-25"
+    "recorded": "2026-09-25",
+    "elements": [10, 12]
   },
   "rows": [
     [
