@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 // THIS PACKAGE IS PUBLIC, AND THAT INVERTS THE FLEET'S RUNNER RULE.
@@ -95,3 +95,34 @@ for (const job of REQUIRED_JOBS) {
     )
   })
 }
+
+// The block above guards the REQUIRED checks in ci.yml. But the constraint that makes a
+// self-hosted lane unroutable here is a property of the REPOSITORY, not of a check's
+// required-ness: `allows_public_repositories: false` applies to every job this repo
+// starts. A non-required job on a self-hosted lane does not fail either — it queues
+// forever, reporting nothing, which is the quietest way for an observer to be dead.
+//
+// So this widens the rule to every workflow file, and it is deliberately blunt: it scans
+// comment-stripped YAML for the label anywhere, including inside the fallback arm of a
+// `fromJSON(vars.X || '["self-hosted",...]')` selector — the arm that runs precisely when
+// the variable is unset, which is the state a new repo is in.
+test('no workflow in this PUBLIC repo selects a self-hosted lane', () => {
+  const dir = fileURLToPath(new URL('../../.github/workflows/', import.meta.url))
+  const files = readdirSync(dir).filter((f) => f.endsWith('.yml') || f.endsWith('.yaml'))
+  assert.ok(files.length > 0, 'no workflows found — this guard would pass vacuously')
+
+  const offenders: string[] = []
+  for (const f of files) {
+    const body = readFileSync(dir + f, 'utf8')
+      .split('\n')
+      .map((l) => l.replace(/(^|\s)#.*$/, ''))  // drop comments; they may discuss the rule
+      .join('\n')
+    if (SELF_HOSTED.test(body)) offenders.push(f)
+  }
+
+  assert.deepEqual(offenders, [],
+    `these workflows name a self-hosted runner: ${offenders.join(', ')}. This repository ` +
+    'is PUBLIC and every CloudIngenium runner group sets allows_public_repositories=false, ' +
+    'so GitHub never assigns one — the job QUEUES FOREVER rather than failing. Measured ' +
+    '2026-09-26: 464 minutes queued with six of seven Build-Light runners idle.')
+})

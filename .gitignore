@@ -24,3 +24,7 @@ Thumbs.db
 # symlinks it to the main checkout with an ABSOLUTE path, which breaks CI
 # if committed (ENOENT on `mkdir .husky/_`).
 .husky/_
+
+# npm lockfile — this repo installs with pnpm (see .github/workflows/ci.yml);
+# a stray package-lock.json from an `npm install` must never ship.
+package-lock.json

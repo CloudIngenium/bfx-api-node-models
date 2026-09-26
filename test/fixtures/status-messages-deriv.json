@@ -2,6 +2,7 @@
   "_meta": {
     "source": "GET https://api-pub.bitfinex.com/v2/status/deriv?keys=tBTCF0:USTF0",
     "recorded": "2026-07-05",
+    "elements": 24,
     "note": "Public, unauthenticated, no-money endpoint. Values are live market data, not synthetic — captured to ground-truth the StatusMessagesDeriv truth-table completion (F5)."
   },
   "payload": [
