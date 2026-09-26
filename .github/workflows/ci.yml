@@ -17,13 +17,7 @@ permissions:
 
 jobs:
   test:
-    # Build-Light, matching the sibling packages bitfinex-api-node and bfx-api-node-rest,
-    # which run this same `setup-node-pnpm` action on this same lane — so the toolchain is
-    # proven here, not assumed. This job was on `ubuntu-24.04`; see `build-and-test` below
-    # for the outage that makes a REQUIRED check's dependence on hosted capacity a defect
-    # rather than a preference. `test (24)` is required on master too, so it carries the
-    # same exposure as the aggregator that mirrors it.
-    runs-on: ${{ fromJSON(vars.BFX_TEST_RUNNER || '["self-hosted","Linux","Build-Light"]') }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       matrix:
@@ -44,27 +38,7 @@ jobs:
     name: build-and-test
     needs: [test]
     if: always()
-    # Self-hosted, matching the aggregator lane infra-iac's `validate` takes (JC D53,
-    # 2026-09-24) and the one BfxPingPongBot's identical job already moved to. This repo
-    # has NO merge queue, so the lane is STATIC rather than the two-arm `merge_group ?
-    # Gate-Fast : PR-Fast` expression that repo carries: with no `merge_group` event to
-    # reach, that arm would be dead code AND the rollback variable would sit on the dead
-    # arm, i.e. an escape hatch that cannot be pulled. Same shape infra-iac's `validate`
-    # took on 2026-09-23 for the same reason. PR-Fast carries a declared floor of 2 in
-    # Knowledge-Hub/config/required-runner-pools.json, so this adds no unwatched lane.
-    #
-    # BOTH jobs in this workflow were GitHub-hosted, which made this repo's exposure total
-    # rather than partial: its two required contexts, `test (24)` and `build-and-test`,
-    # had no self-hosted path between them. On 2026-09-26 org Actions billing failed
-    # ("recent account payments have failed or your spending limit needs to be increased")
-    # and hosted jobs stopped being ASSIGNED A RUNNER — created with no runner and no
-    # steps, dead in ~3 s, leaving no log and no annotation on the check. Measured on the
-    # sibling bitfinex-api-node, job 108349511998. A required context that cannot START
-    # freezes every merge in the repo, and this one does no work: it reads
-    # `needs.test.result` and exits.
-    #
-    # Rollback without a PR: set the repo variable BFX_AGGREGATOR_RUNNER.
-    runs-on: ${{ fromJSON(vars.BFX_AGGREGATOR_RUNNER || '["self-hosted","Linux","PR-Fast"]') }}
+    runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Verify test matrix succeeded
