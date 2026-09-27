@@ -166,11 +166,20 @@ export class Model extends EventEmitter {
         return new Error(`${key}: no field index declared for this validator`)
       }
 
-      const instanceValue = Array.isArray(data)
+      const rawValue = Array.isArray(data)
         ? getNestedValue(data, Array.isArray(fields[key])
           ? fields[key] as number[]
           : [fields[key] as number])
         : (data as Record<string, unknown>)[key]
+
+      // Apply the SAME bool decoding `unserialize` applies. Until 2026-09-27
+      // `boolFields` was a dead parameter here: accepted, forwarded into the
+      // collection recursion, and never read. Seven models pass it, so every
+      // one of them validated the raw wire value -- and Bitfinex sends 0/1,
+      // not true/false, so `boolValidator` reported "must be a bool" for a
+      // perfectly well-formed row. validate() and unserialize() have to agree
+      // on what a field IS before validate() can say anything useful about it.
+      const instanceValue = boolFields.includes(key) ? rawValue === 1 : rawValue
 
       if (typeof validators[key] === 'function') {
         const errMessage = validators[key](instanceValue)

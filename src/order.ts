@@ -7,6 +7,7 @@ import { stringValidator } from './validators/string.js'
 import { boolValidator } from './validators/bool.js'
 import { priceValidator } from './validators/price.js'
 import { symbolValidator } from './validators/symbol.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 const statuses = ['ACTIVE', 'EXECUTED', 'PARTIALLY FILLED', 'CANCELED']
@@ -195,8 +196,15 @@ export class Order extends Model {
     const keys = Object.keys(changes)
     const fieldKeys = Object.keys(this._fields)
 
-    keys.forEach(k => {
-      if (k === 'id') return
+    // A `for...of` loop, NOT `keys.forEach`: the delta guard below aborts the
+    // update, and a callback cannot. Until 2026-09-27 it read
+    // `return Promise.reject(...)` inside a forEach callback, whose return value
+    // is discarded — so applying a delta to an order with no amount resolved
+    // normally, forwarded the bad delta to the exchange anyway, and leaked an
+    // unhandled rejection that terminates Node by default. Measured: update()
+    // returned 'ok' while updateOrder() received `delta: "5.00000000"`.
+    for (const k of keys) {
+      if (k === 'id') continue
       if (fieldKeys.includes(k)) {
         (this as Record<string, unknown>)[k] = changes[k]
       } else if (k === 'price_trailing') {
@@ -204,14 +212,13 @@ export class Order extends Model {
       } else if (k === 'price_oco_stop' || k === 'price_aux_limit') {
         this.priceAuxLimit = Number(changes[k])
       } else if (k === 'delta' && !Number.isNaN(+(changes[k] as number))) {
-        if (!Number.isNaN(+this.amount)) {
-          this.amount += Number(changes[k])
-          this._lastAmount = this.amount
-        } else {
-          return Promise.reject(new Error("can't apply delta to missing amount"))
+        if (Number.isNaN(+this.amount)) {
+          throw new Error("can't apply delta to missing amount")
         }
+        this.amount += Number(changes[k])
+        this._lastAmount = this.amount
       }
-    })
+    }
 
     changes.id = this.id
     if (changes.price) changes.price = preparePrice(changes.price as number)
@@ -360,17 +367,42 @@ export class Order extends Model {
 
   static validate (data: unknown): Error | null {
     return super.validate({
-      data, fields,
+      // `boolFields` matters here exactly as it does in unserialize(): without
+      // it, `notify` is validated as the raw 0/1 off the wire and every real
+      // row fails. Order was the one model that declared boolFields and then
+      // did not hand them to its own validator.
+      data, fields, boolFields,
       validators: {
-        symbol: symbolValidator, id: numberValidator, gid: numberValidator,
-        cid: dateValidator, mtsCreate: dateValidator, mtsUpdate: dateValidator,
+        symbol: symbolValidator,
+        id: numberValidator,
+        // Five fields carry `null` on a perfectly ordinary order, so they are
+        // nullable rather than required (see validators/nullable.ts). Until
+        // 2026-09-27 they used the bare validators inherited from upstream,
+        // which made validate() reject the COMMON shape: `gid` is null unless
+        // the order joined a group, `cid` unless this client placed it,
+        // `typePrev` until something changes the type, `mtsTIF` unless a
+        // time-in-force was set, and `placedId` unless another order placed
+        // this one. Ungrouped orders are the overwhelming majority, so
+        // `gid: null` alone failed nearly every real row -- the shape this
+        // package's own sibling (bitfinex-api-node ws2-integration) uses to
+        // model an order. Loosening only: nothing that validated before stops.
+        gid: nullable(numberValidator),
+        cid: nullable(dateValidator),
+        typePrev: nullable((v: unknown) => stringValidator(v, Object.values(Order.type))),
+        mtsTIF: nullable(dateValidator),
+        mtsCreate: dateValidator, mtsUpdate: dateValidator,
         amount: amountValidator, amountOrig: amountValidator,
         type: (v: unknown) => stringValidator(v, Object.values(Order.type)),
-        typePrev: (v: unknown) => stringValidator(v, Object.values(Order.type)),
-        mtsTIF: dateValidator, flags: numberValidator, status: stringValidator,
+        flags: numberValidator, status: stringValidator,
         price: priceValidator, priceAvg: priceValidator,
         priceTrailing: priceValidator, priceAuxLimit: priceValidator,
-        notify: boolValidator, hidden: boolValidator, placedId: numberValidator
+        notify: boolValidator,
+        // `hidden` is declared `number` on this class and is NOT a boolField,
+        // so nothing ever decodes it to a boolean -- the wire 0/1 arrives and
+        // stays. Validating it as a bool contradicted its own declared type
+        // and rejected every row that carried it.
+        hidden: numberValidator,
+        placedId: nullable(numberValidator)
       }
     })
   }

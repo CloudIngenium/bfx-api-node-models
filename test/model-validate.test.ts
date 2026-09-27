@@ -113,3 +113,74 @@ describe('the null/undefined regression', () => {
     })
   }
 })
+
+/**
+ * validate() and unserialize() must agree on what a bool field is.
+ *
+ * Bitfinex sends 0/1 on the wire, never true/false. `unserialize` decodes
+ * those to booleans via `boolFields`; `validate` accepted the same parameter
+ * and ignored it, so every model that declared a boolField validated the raw
+ * number and `boolValidator` rejected it as "must be a bool" -- on a row that
+ * was perfectly well formed. Seven models pass boolFields, so this was not an
+ * Order-specific problem; Order was only the model that also forgot to pass
+ * them.
+ *
+ * The pairs below are asserted to EXIST in each model's `_fields` map before
+ * anything is checked against them. A first draft of this test looked the
+ * index up on a static that is not exported, found undefined, and returned
+ * early -- seven tests that passed while asserting nothing.
+ */
+describe('validate(): bool fields decode the same way unserialize decodes them', () => {
+  const BOOL_FIELDS: Array<[string, string[]]> = [
+    ['Order', ['notify']],
+    ['Trade', ['maker']],
+    ['FundingOffer', ['notify', 'hidden', 'renew']],
+    ['FundingCredit', ['notify', 'hidden', 'renew', 'noClose']],
+    ['FundingLoan', ['notify', 'hidden', 'renew', 'noClose']],
+    ['UserInfo', ['isPaperTradeEnabled', 'isUserMerchant']],
+    ['AuthPermission', ['read', 'write']]
+  ]
+
+  for (const [name, boolFields] of BOOL_FIELDS) {
+    describe(name, () => {
+      const Model = (models as Record<string, any>)[name]
+
+      test('is exported and exposes a field map', () => {
+        assert.ok(Model, `${name} is not exported`)
+        assert.ok(new Model([])._fields, `${name} has no _fields map`)
+      })
+
+      for (const field of boolFields) {
+        test(`${field}: the wire's 0 and 1 are both accepted`, () => {
+          const fields = new Model([])._fields as Record<string, number | number[]>
+          assert.ok(field in fields, `${name} has no field named ${field}`)
+          const path = fields[field]
+          assert.ok(!Array.isArray(path), `${field} is nested; this test assumes a flat slot`)
+
+          for (const wire of [0, 1]) {
+            const row: unknown[] = []
+            row[path as number] = wire
+            const result = Model.validate(row)
+            // The rest of the row is empty, so other validators may object --
+            // but never about THIS field. That is the whole assertion.
+            if (result instanceof Error) {
+              assert.ok(!result.message.startsWith(`${field}:`),
+                `rejected the wire value ${wire}: ${result.message}`)
+            }
+          }
+        })
+      }
+    })
+  }
+
+  test('an already-boolean value is still accepted', () => {
+    const { Order } = models as Record<string, any>
+    const idx = (new Order([])._fields as Record<string, number>).notify
+    const row: unknown[] = []
+    row[idx] = true
+    const result = Order.validate(row)
+    if (result instanceof Error) {
+      assert.ok(!result.message.startsWith('notify:'), result.message)
+    }
+  })
+})
