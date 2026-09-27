@@ -43,7 +43,11 @@ export class PublicTrade extends Model {
   }
 
   static validate (data: unknown): Error | null {
-    const rate = (data as Record<string, unknown>).rate
+    // Optional: this runs BEFORE super.validate, so a null/undefined payload
+    // would throw here rather than reaching the guard that turns it into an
+    // Error. For an array row the property is undefined either way, so the
+    // funding/trading discrimination below is unaffected.
+    const rate = (data as Record<string, unknown> | null | undefined)?.rate
     return super.validate({
       data,
       fields: Number.isFinite(rate) ? FUNDING_FIELDS : TRADING_FIELDS,
