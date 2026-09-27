@@ -162,7 +162,15 @@ export class Model extends EventEmitter {
       // right slot — it would index the array with `undefined` and report a
       // spurious failure for every input. That is a typo in the model, not a
       // data problem, so surface it as one.
-      if (!(key in fields)) {
+      //
+      // ARRAY data only. `fields` is what maps a validator name onto a slot,
+      // and only an array needs that mapping; object data is read by name.
+      // Added unconditionally in #46, this rejected every hand-parsed model:
+      // FundingInfo and MarginInfo carry no index map at all (`fields: {}`)
+      // because they decode nested, tagged rows by hand, so their validate()
+      // returned "no field index declared" for their OWN unserialize()
+      // output and could never return null for any input whatsoever.
+      if (Array.isArray(data) && !(key in fields)) {
         return new Error(`${key}: no field index declared for this validator`)
       }
 
