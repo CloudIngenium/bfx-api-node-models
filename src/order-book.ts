@@ -274,6 +274,15 @@ export class OrderBook extends EventEmitter {
   serialize (): number[][] { return (this.asks || []).concat(this.bids || []) }
 
   toJS (): unknown {
+    // An empty book serializes to `[]`, which `unserialize` reads as a single
+    // row rather than a collection and returns `{}` for -- so `toJS().bids`
+    // was undefined exactly when the book was empty, and a consumer writing
+    // `toJS().bids.length` crashed at startup and nowhere else. The shape a
+    // caller destructures must not depend on whether any levels have arrived.
+    if (this.bids.length === 0 && this.asks.length === 0) {
+      return { bids: [], asks: [] }
+    }
+
     return OrderBook.unserialize(this.serialize(), this.raw)
   }
 
