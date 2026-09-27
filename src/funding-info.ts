@@ -1,6 +1,6 @@
 import { numberValidator } from './validators/number.js'
 import { amountValidator } from './validators/amount.js'
-import { symbolValidator } from './validators/symbol.js'
+import { fundingSymbolValidator } from './validators/funding-symbol.js'
 import { isCollection } from './util/is-collection.js'
 import { Model } from './model.js'
 
@@ -42,7 +42,7 @@ export class FundingInfo extends Model {
     return super.validate({
       data, fields: {},
       validators: {
-        symbol: symbolValidator, yieldLoan: amountValidator, yieldLend: amountValidator,
+        symbol: fundingSymbolValidator, yieldLoan: amountValidator, yieldLend: amountValidator,
         durationLoan: numberValidator, durationLend: numberValidator
       }
     })

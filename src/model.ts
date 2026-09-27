@@ -162,15 +162,32 @@ export class Model extends EventEmitter {
       // right slot — it would index the array with `undefined` and report a
       // spurious failure for every input. That is a typo in the model, not a
       // data problem, so surface it as one.
-      if (!(key in fields)) {
+      //
+      // ARRAY data only. `fields` is what maps a validator name onto a slot,
+      // and only an array needs that mapping; object data is read by name.
+      // Added unconditionally in #46, this rejected every hand-parsed model:
+      // FundingInfo and MarginInfo carry no index map at all (`fields: {}`)
+      // because they decode nested, tagged rows by hand, so their validate()
+      // returned "no field index declared" for their OWN unserialize()
+      // output and could never return null for any input whatsoever.
+      if (Array.isArray(data) && !(key in fields)) {
         return new Error(`${key}: no field index declared for this validator`)
       }
 
-      const instanceValue = Array.isArray(data)
+      const rawValue = Array.isArray(data)
         ? getNestedValue(data, Array.isArray(fields[key])
           ? fields[key] as number[]
           : [fields[key] as number])
         : (data as Record<string, unknown>)[key]
+
+      // Apply the SAME bool decoding `unserialize` applies. Until 2026-09-27
+      // `boolFields` was a dead parameter here: accepted, forwarded into the
+      // collection recursion, and never read. Seven models pass it, so every
+      // one of them validated the raw wire value -- and Bitfinex sends 0/1,
+      // not true/false, so `boolValidator` reported "must be a bool" for a
+      // perfectly well-formed row. validate() and unserialize() have to agree
+      // on what a field IS before validate() can say anything useful about it.
+      const instanceValue = boolFields.includes(key) ? rawValue === 1 : rawValue
 
       if (typeof validators[key] === 'function') {
         const errMessage = validators[key](instanceValue)
