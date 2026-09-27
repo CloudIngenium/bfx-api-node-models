@@ -135,6 +135,17 @@ export class Model extends EventEmitter {
     boolFields?: string[]
     validators: ValidatorMap
   }): Error | null {
+    // Every other malformed shape -- an empty array, a row of objects, a row
+    // of nulls, a bare string -- comes back as an Error. `null` and
+    // `undefined` used to be the exceptions: they fell through to the
+    // property read below and threw a TypeError instead, so a caller
+    // validating a payload that failed to arrive got a crash where every
+    // other bad payload got a return value. Validation of untrusted wire
+    // data should be total.
+    if (data === null || data === undefined) {
+      return new Error(`data: expected an array or object, got ${String(data)}`)
+    }
+
     if (isCollection(data)) {
       return (data as unknown[][]).map(i => Model.validate({
         data: i,

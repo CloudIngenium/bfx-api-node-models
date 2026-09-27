@@ -24,7 +24,7 @@
     "postbuild": "node scripts/check-dist.mjs",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "npm run build && node --test --experimental-test-coverage --test-coverage-lines=62 --test-coverage-branches=96 --test-coverage-functions=52 'test/**/*.test.ts'",
+    "test": "npm run build && node --test --experimental-test-coverage --test-coverage-lines=76 --test-coverage-branches=96 --test-coverage-functions=65 'test/**/*.test.ts'",
     "prepublishOnly": "npm run build"
   },
   "repository": {
