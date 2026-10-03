@@ -58,12 +58,12 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "eslint": "^10.8.0",
+    "eslint": "^10.11.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.71.0"
   },
   "publishConfig": {
     "@cloudingenium:registry": "https://npm.pkg.github.com"
   },
-  "packageManager": "pnpm@11.18.0"
+  "packageManager": "pnpm@11.28.2"
 }
