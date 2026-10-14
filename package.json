@@ -1,6 +1,6 @@
 {
   "name": "@cloudingenium/bfx-api-node-models",
-  "version": "10.2.0",
+  "version": "10.2.1",
   "description": "TypeScript models for the Bitfinex API — CloudIngenium modernized fork",
   "type": "module",
   "engines": {
@@ -11,7 +11,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "files": [
