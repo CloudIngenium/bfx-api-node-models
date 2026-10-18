@@ -17,7 +17,6 @@ minimumReleaseAgeExclude:
   - lucide-react
   - react-i18next
   - i18next
-  - eslint
   - ignore
   - prettier
   - '@esbuild/*'
@@ -48,8 +47,6 @@ minimumReleaseAgeExclude:
   - defu
   - postcss
   - '@babel/core'
-  - '@typescript-eslint/eslint-plugin'
-  - '@typescript-eslint/parser'
   - baseline-browser-mapping
   - js-yaml
   - sharp
@@ -100,8 +97,6 @@ overrides:
   yaml: '>=2.8.3'
   defu: '>=6.1.7'
   '@babel/core': '>=7.29.6'
-  '@typescript-eslint/eslint-plugin': ^8.63.0
-  '@typescript-eslint/parser': ^8.63.0
 registries:
   default: https://registry.npmjs.org/
   '@types': https://registry.npmjs.org/

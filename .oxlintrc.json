@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // node: the fleet base port plus Node globals. recommended: the rules of the
+  // tseslint.configs.recommended spread the old eslint.config.js carried that
+  // oxlint's correctness category lacks.
+  "extends": [
+    "./node_modules/@cloudingenium/oxlint-config/node.json",
+    "./node_modules/@cloudingenium/oxlint-config/recommended.json"
+  ],
+  // ignorePatterns does not pass through extends: restate the fleet list.
+  "ignorePatterns": ["dist/", "build/", "node_modules/", ".astro/", ".wrangler/", ".claude/", "coverage/", ".pnpm-store/"],
+  "overrides": [
+    {
+      // The old config was stricter than the fleet base on src/: no-explicit-any
+      // was on (the base turns it off) and no-console allowed no method at all.
+      // An override, because the base sets both inside its own overrides.
+      "files": ["src/**/*.ts"],
+      "rules": {
+        "typescript/no-explicit-any": "warn",
+        "no-console": "warn"
+      }
+    },
+    {
+      // RATCHET 2026-10-18: 8 pre-existing sites (order.ts: unbound-method x3,
+      // no-useless-fallback-in-spread x2, no-useless-default-assignment x2;
+      // position.ts: no-useless-default-assignment x1), triage: plan 2026-10-03-master-fleet-currency-majors
+      // Scoped to the two files rather than per-site comments: tsc keeps comments
+      // in dist/*.js, and this package's published output stays byte-identical.
+      "files": ["src/order.ts"],
+      "rules": {
+        "typescript/unbound-method": "off",
+        "unicorn/no-useless-fallback-in-spread": "off",
+        "typescript/no-useless-default-assignment": "off"
+      }
+    },
+    {
+      "files": ["src/position.ts"],
+      "rules": {
+        "typescript/no-useless-default-assignment": "off"
+      }
+    }
+  ]
+}
