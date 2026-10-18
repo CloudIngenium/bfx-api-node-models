@@ -24,6 +24,7 @@ test('numberValidator — accepts finite numbers, including zero and negatives',
 
 test('numberValidator — rejects non-finite and non-number input with "must be a number"', () => {
   for (const v of [NaN, Infinity, -Infinity, '83780', null, undefined, {}, [], true]) {
+    // oxlint-disable-next-line typescript/no-base-to-string -- pre-existing, triage: plan 2026-10-03-master-fleet-currency-majors
     assert.equal(numberValidator(v), 'must be a number', `${String(v)} must be rejected`)
   }
 })
@@ -56,6 +57,7 @@ test('priceValidator — rejects negatives', () => {
 
 test('priceValidator — reports its own message for non-numbers, not numberValidator\'s', () => {
   for (const v of ['83782', NaN, null, undefined, {}]) {
+    // oxlint-disable-next-line typescript/no-base-to-string -- pre-existing, triage: plan 2026-10-03-master-fleet-currency-majors
     assert.equal(priceValidator(v), 'must be a number greater than zero', `${String(v)} must be rejected`)
   }
 })
@@ -93,6 +95,7 @@ test('boolValidator — accepts only real booleans', () => {
 
 test('boolValidator — rejects the wire 1/0 form and everything else', () => {
   for (const v of [1, 0, 'true', null, undefined, {}]) {
+    // oxlint-disable-next-line typescript/no-base-to-string -- pre-existing, triage: plan 2026-10-03-master-fleet-currency-majors
     assert.equal(boolValidator(v), 'must be a bool', `${String(v)} must be rejected`)
   }
 })
@@ -106,6 +109,7 @@ test('stringValidator — accepts any string when no options are given', () => {
 
 test('stringValidator — rejects non-strings with "must be a string"', () => {
   for (const v of [1, null, undefined, {}, [], true]) {
+    // oxlint-disable-next-line typescript/no-base-to-string -- pre-existing, triage: plan 2026-10-03-master-fleet-currency-majors
     assert.equal(stringValidator(v), 'must be a string', `${String(v)} must be rejected`)
   }
 })

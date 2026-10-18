@@ -4,11 +4,11 @@ TypeScript models for the Bitfinex API — CloudIngenium modernized fork.
 
 ## Stack
 
-- **Runtime**: Node.js >= 24, TypeScript ~6.0, ESM-only
+- **Runtime**: Node.js >= 24, TypeScript ~7.0, ESM-only
 - **Build**: `tsc` -> `dist/`
 - **Test**: `node --test 'test/**/*.test.ts'` against the **built `dist/`** (Node 24's native TS type-stripping only erases types — it does not resolve a `.js` import specifier to a sibling `.ts` file, and this repo's `NodeNext` resolution imports everything with a `.js` extension — so tests import compiled output, not `src/`). Zero test-framework dependencies: Node 24's built-in `node:test`/`node:assert` runner is sufficient, matching the repo's minimal-deps philosophy. Fixtures live in `test/fixtures/*.json` — recorded real (public, unauthenticated, no-money) Bitfinex payloads per the positional-decoder-adoption design doc's F5 fence, not synthetic arrays. See `docs/positional-index-truth-table.md` for the normative per-channel index reference these tests assert against.
 - **Coverage**: `npm test` runs `--experimental-test-coverage` and fails below the `--test-coverage-lines/branches/functions` thresholds in the `test` script. `test/model-surface.test.ts` imports the package index, so every module is measured — an untested model counts as uncovered, not absent. Raise the thresholds as coverage grows; they are a floor, not a claim of full coverage.
-- **Lint**: ESLint 10 + typescript-eslint (TypeScript 6 until the parser declares TS7 support)
+- **Lint**: oxlint with `@cloudingenium/oxlint-config` (`node` preset + `recommended` add-on, `.oxlintrc.json`); the type-aware rules run on oxlint-tsgolint (the TypeScript 7 checker). `--max-warnings 0`, so a warning fails `pnpm run lint`, which CI runs inside the required `test` job. Pre-existing findings are ratcheted in `.oxlintrc.json` (file-scoped in `src/`, because tsc keeps comments in `dist/*.js`) and by per-site comments in `test/`
 - **Package**: `@cloudingenium/bfx-api-node-models` (GitHub Packages, internal visibility)
 
 ## Key Commands
@@ -16,8 +16,8 @@ TypeScript models for the Bitfinex API — CloudIngenium modernized fork.
 ```bash
 npm run build    # Compile (tsc); postbuild runs scripts/check-dist.mjs
 npm test         # Build + unit tests, enforcing the coverage gate
-npm run lint     # ESLint check
-npm run lint:fix # ESLint auto-fix
+npm run lint     # oxlint check (type-aware)
+npm run lint:fix # oxlint auto-fix
 ```
 
 ## Releasing
