@@ -58,7 +58,7 @@
     "crc-32": "^1.2.2"
   },
   "devDependencies": {
-    "@cloudingenium/oxlint-config": "latest",
+    "@cloudingenium/oxlint-config": "^1.1.0",
     "@types/node": "^26.1.1",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",
@@ -67,5 +67,5 @@
   "publishConfig": {
     "@cloudingenium:registry": "https://npm.pkg.github.com"
   },
-  "packageManager": "pnpm@11.28.2"
+  "packageManager": "pnpm@12.15.0"
 }
