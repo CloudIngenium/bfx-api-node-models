@@ -104,3 +104,10 @@ registries:
 peerDependencyRules:
   allowedVersions:
     partyserver@0.5.8>@cloudflare/workers-types: '>=4.20260424.1 <6'
+
+# Keep pnpm-lock.yaml a single YAML document. Without this, pnpm 12 records
+# packageManagerDependencies in a leading env document, and GitHub's dependency
+# graph reads only the first document: zero dependencies, Dependabot alerts
+# closed (dependabot/dependabot-core#15904). Remove once that ships.
+# Cost: pnpm does not switch to the pinned version; hosts run their global pnpm.
+pmOnFail: ignore
