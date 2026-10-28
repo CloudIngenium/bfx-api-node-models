@@ -9,14 +9,16 @@ len 25, OB_CHECKSUM conf flag, recorded 2026-10-28).
 
 CRC32 of the top 25 levels per side, interleaved bid, ask, bid, ask…, each level
 as `key:amount`, all joined with `:`. Values are in JS string form: `9.7e-7`
-stays `9.7e-7`. Until 2026-10-28 prices were rewritten to fixed point
-(`0.00000097`, and `1e-7` became `0.00000010`), so every book quoting below
-1e-6 failed every checksum (tDOGE:BTC 0/16, tADABTC 0/21 on the recording).
+stays `9.7e-7`. Until 2026-10-28 numeric prices were rewritten to fixed point
+(`0.00000097`, and `1e-7` became `0.00000010`), so a book of numeric rows
+quoting below 1e-6 failed every checksum (tDOGE:BTC 0/16, tADABTC 0/21 on the
+recording). A string key, as in a lossless book, is joined as received and was
+never rewritten.
 
 | Book | Key | Amount |
 |---|---|---|
-| Trading, P0..P4 `[PRICE, COUNT, AMOUNT]` | price, through `preparePrice` | AMOUNT |
-| Funding, P0..P4 `[RATE, PERIOD, COUNT, AMOUNT]` | rate, unrounded | AMOUNT |
+| Trading, P0..P4 `[PRICE, COUNT, AMOUNT]` | price, through `preparePrice` (a string as received) | AMOUNT |
+| Funding, P0 `[RATE, PERIOD, COUNT, AMOUNT]` (P1..P4 assumed, not recorded) | rate, unrounded | AMOUNT |
 | Raw, R0 (trading or funding) | order or offer id | AMOUNT |
 
 ## Funding books: the order is the server's

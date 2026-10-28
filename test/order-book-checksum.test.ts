@@ -43,11 +43,17 @@ interface Replayed { checksums: number, instanceHits: number, arrayHits: number 
  * the bare-array statics bitfinex-api-node uses (`updateArrayOBWith`), then
  * scores each against every server checksum frame. `onFrame` sees the books
  * after each delta.
+ *
+ * `strings` feeds every value as a string, the way bitfinex-api-node keeps
+ * the lossless book it checksums (lossless-json numbers, `toString()`ed).
+ * For these recorded values the JS string form is the wire text.
  */
 function replay (
   channel: Channel,
-  onFrame?: (row: Row, ob: InstanceType<typeof OrderBook>, arr: Row[]) => void
+  onFrame?: (row: Row, ob: InstanceType<typeof OrderBook>, arr: Row[]) => void,
+  strings = false
 ): Replayed {
+  const toRow = (r: Row): Row => strings ? r.map(String) as unknown as Row : r
   let ob = new OrderBook()
   let arr: Row[] = []
   const out = { checksums: 0, instanceHits: 0, arrayHits: 0 }
@@ -61,15 +67,30 @@ function replay (
     }
     const payload = frame[0]
     if (Array.isArray(payload[0])) {
-      ob = new OrderBook(payload as Row[])
-      arr = (payload as Row[]).slice()
+      const snap = (payload as Row[]).map(toRow)
+      ob = new OrderBook(snap)
+      arr = snap.slice()
     } else {
-      ob.updateWith(payload as Row)
-      OrderBook.updateArrayOBWith(arr, payload as Row)
-      onFrame?.(payload as Row, ob, arr)
+      const row = toRow(payload as Row)
+      ob.updateWith(row)
+      OrderBook.updateArrayOBWith(arr, row)
+      onFrame?.(row, ob, arr)
     }
   }
   return out
+}
+
+/** Every checksum frame matched, by both APIs, for numeric and string rows. */
+function assertAllMatch (channel: Channel): void {
+  for (const strings of [false, true]) {
+    const r = replay(channel, undefined, strings)
+    assert.ok(r.checksums > 0)
+    assert.deepEqual(
+      r,
+      { checksums: r.checksums, instanceHits: r.checksums, arrayHits: r.checksums },
+      strings ? 'string rows' : 'numeric rows'
+    )
+  }
 }
 
 describe('OrderBook: trading books reproduce the server checksum', () => {
@@ -85,9 +106,7 @@ describe('OrderBook: trading books reproduce the server checksum', () => {
 
   for (const channel of trading) {
     test(`${label(channel)}: every checksum matches, instance and array`, () => {
-      const r = replay(channel)
-      assert.ok(r.checksums > 0)
-      assert.deepEqual(r, { checksums: r.checksums, instanceHits: r.checksums, arrayHits: r.checksums })
+      assertAllMatch(channel)
     })
   }
 })
@@ -132,9 +151,7 @@ describe('OrderBook: aggregated funding books', () => {
       // to 5 significant digits), and levels sharing a rate keep the server's
       // order -- snapshot order, an update in place, a new period after its
       // siblings. See OrderBook#checksum.
-      const r = replay(channel)
-      assert.ok(r.checksums > 0)
-      assert.deepEqual(r, { checksums: r.checksums, instanceHits: r.checksums, arrayHits: r.checksums })
+      assertAllMatch(channel)
     })
   }
 })

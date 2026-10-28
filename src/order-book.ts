@@ -6,7 +6,8 @@ import { preparePrice } from './util/precision.js'
  * The `[key, amount]` one level contributes to a checksum, left for
  * `join(':')` to stringify. The key is the order or offer id on a raw book,
  * the unrounded rate on an aggregated funding book, and the price, through
- * `preparePrice`, on an aggregated trading book.
+ * `preparePrice`, on an aggregated trading book. A string key (a lossless
+ * book) is joined as received.
  */
 const checksumPair = (row: number[], raw: boolean): (string | number)[] => {
   const key: string | number = row[0]
