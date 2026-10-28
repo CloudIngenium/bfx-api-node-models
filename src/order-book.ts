@@ -2,6 +2,22 @@ import CRC from 'crc-32'
 import { EventEmitter } from 'node:events'
 import { preparePrice } from './util/precision.js'
 
+/**
+ * The `[key, amount]` one level contributes to a checksum, left for
+ * `join(':')` to stringify. The key is the order or offer id on a raw book,
+ * the unrounded rate on an aggregated funding book, and the price, through
+ * `preparePrice`, on an aggregated trading book.
+ */
+const checksumPair = (row: number[], raw: boolean): (string | number)[] => {
+  const key: string | number = row[0]
+  const amount = row.length === 4 ? row[3] : row[2]
+  if (raw || row.length === 4 || typeof key === 'string') return [key, amount]
+  return [Number(preparePrice(key)), amount]
+}
+
+/** An aggregated (P0..P4) funding row: [RATE, PERIOD, COUNT, AMOUNT]. */
+const isFundingLevel = (row: unknown[], raw: boolean): boolean => !raw && row.length === 4
+
 export class OrderBook extends EventEmitter {
   raw: boolean
   bids: number[][]
@@ -51,6 +67,25 @@ export class OrderBook extends EventEmitter {
     return askVol + bidVol
   }
 
+  /**
+   * CRC32 of the top 25 levels per side, interleaved bid/ask and joined with
+   * ':', as Bitfinex computes it for the OB_CHECKSUM (`cs`) frame.
+   *
+   * Each level contributes its key and amount in JS string form: `9.7e-7`
+   * stays `9.7e-7` (the server joins it that way; a fixed-point rewrite
+   * mismatched every book quoting below 1e-6). Trading prices go through
+   * `preparePrice`; funding rates are joined unrounded; raw books use the
+   * order or offer id.
+   *
+   * Funding books (P0) hold several levels at one rate, one per period, and
+   * the server checksums them in its own order, which no field sorts. The
+   * checksum matches only while the book keeps that order: the snapshot rows
+   * as served, an update to an existing (rate, period) in place, and a new
+   * period after its siblings. `updateWith` and `updateArrayOBWith` do that.
+   * Evidence: every funding checksum (53/53, nine currencies) in the recorded
+   * session in test/recordings/order-book-checksum.json; see
+   * docs/order-book-checksum.md for its limits.
+   */
   checksum (): number {
     const { raw } = this
     const data: (string | number)[] = []
@@ -58,35 +93,17 @@ export class OrderBook extends EventEmitter {
     for (let i = 0; i < 25; i++) {
       const bid = this.bids[i]
       const ask = this.asks[i]
-
-      if (bid) {
-        let price: string | number = bid[0]
-        const amount = bid.length === 4 ? bid[3] : bid[2]
-        if (!raw && typeof price !== 'string') {
-          price = Number(preparePrice(price))
-          price = /e/.test(price + '')
-            ? (price as number).toFixed(Math.abs(+(price + '').split('e')[1]) + 1)
-            : price
-        }
-        data.push(price, amount)
-      }
-
-      if (ask) {
-        let price: string | number = ask[0]
-        const amount = ask.length === 4 ? ask[3] : ask[2]
-        if (!raw && typeof price !== 'string') {
-          price = Number(preparePrice(price))
-          price = /e/.test(price + '')
-            ? (price as number).toFixed(Math.abs(+(price + '').split('e')[1]) + 1)
-            : price
-        }
-        data.push(price, amount)
-      }
+      if (bid) data.push(...checksumPair(bid, raw))
+      if (ask) data.push(...checksumPair(ask, raw))
     }
 
     return CRC.str(data.join(':'))
   }
 
+  /**
+   * `checksum()` over a bare array book (bids, then asks, as
+   * `updateArrayOBWith` keeps it). Same string form and funding-order caveat.
+   */
   static checksumArr (arr: number[][], raw = false): number {
     let topAskI = -1
 
@@ -102,30 +119,8 @@ export class OrderBook extends EventEmitter {
     for (let i = 0; i < 25; i++) {
       const bid = topAskI === -1 || i < topAskI ? arr[i] : null
       const ask = topAskI === -1 ? null : arr[topAskI + i]
-
-      if (bid) {
-        let price: string | number = bid[0]
-        const amount = bid.length === 4 ? bid[3] : bid[2]
-        if (!raw && typeof price !== 'string') {
-          price = Number(preparePrice(price))
-          price = /e/.test(price + '')
-            ? (price as number).toFixed(Math.abs(+(price + '').split('e')[1]) + 1)
-            : price
-        }
-        data.push(price, amount)
-      }
-
-      if (ask) {
-        let price: string | number = ask[0]
-        const amount = ask.length === 4 ? ask[3] : ask[2]
-        if (!raw && typeof price !== 'string') {
-          price = Number(preparePrice(price))
-          price = /e/.test(price + '')
-            ? (price as number).toFixed(Math.abs(+(price + '').split('e')[1]) + 1)
-            : price
-        }
-        data.push(price, amount)
-      }
+      if (bid) data.push(...checksumPair(bid, raw))
+      if (ask) data.push(...checksumPair(ask, raw))
     }
 
     return CRC.str(data.join(':'))
@@ -156,6 +151,13 @@ export class OrderBook extends EventEmitter {
     const count = raw ? -1 : numEntry.length === 4 ? numEntry[2] : numEntry[1]
     const price = numEntry[priceI]
     const oID = numEntry[0]
+    // A raw level is its id; a trading level its price; a funding level its
+    // (rate, period): one rate carries a separate level per period.
+    const funding = isFundingLevel(numEntry, raw)
+    const period = numEntry[1]
+    const isLevel = (l: number[]): boolean => raw
+      ? Number(l[0]) === oID
+      : Number(l[priceI]) === price && (!funding || Number(l[1]) === period)
     const amount = numEntry.length === 4 ? numEntry[3] : numEntry[2]
     const dir = numEntry.length === 4
       ? amount < 0 ? 1 : -1
@@ -171,9 +173,16 @@ export class OrderBook extends EventEmitter {
     }
 
     for (let i = 0; i < side.length; i++) {
-      if ((!raw && Number(side[i][priceI]) === price) || (raw && Number(side[i][0]) === oID)) {
+      if (isLevel(side[i])) {
         if ((!raw && count === 0) || (raw && price === 0)) {
           side.splice(i, 1)
+          this.emit('update', entry)
+          return true
+        } else if (funding) {
+          // In place: the server's order among levels sharing a rate is the
+          // checksum order, and re-inserting would move this one behind its
+          // siblings. See checksum().
+          side[i] = entry
           this.emit('update', entry)
           return true
         } else if (!raw || (raw && price > 0)) {
@@ -296,12 +305,22 @@ export class OrderBook extends EventEmitter {
       ? amount < 0 ? 1 : -1
       : amount < 0 ? -1 : 1
     const count = raw ? -1 : entry.length === 4 ? Number(entry[2]) : Number(entry[1])
+    // Keyed as in updateWith. One array holds both sides, and a funding rate
+    // can sit on both at once, so a funding level also matches on side.
+    const funding = isFundingLevel(entry, raw)
+    const period = Number(entry[1])
+    const isLevel = (pl: number[]): boolean => raw
+      ? pl[0] === Number(entry[0])
+      : pl[priceI] === price && (!funding || (pl[1] === period && (pl[3] < 0) === (amount < 0)))
 
     for (let i = 0; i < ob.length; i++) {
       const pl = ob[i].map(x => Number(x))
-      if ((!raw && pl[priceI] === price) || (raw && pl[0] === Number(entry[0]))) {
+      if (isLevel(pl)) {
         if ((!raw && count === 0) || (raw && price === 0)) {
           ob.splice(i, 1)
+          return true
+        } else if (funding) {
+          ob[i] = entry
           return true
         } else {
           ob.splice(i, 1)
