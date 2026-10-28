@@ -63,3 +63,15 @@ describe('PublicTrade: dispatch on the row width, never the collection length', 
     assert.equal(new PublicTrade(fixture.funding5.payload[0]).rate, 0.00012516)
   })
 })
+
+describe('PublicTrade.validate: same row-width dispatch as unserialize', () => {
+  test('recorded trading and funding collections validate', () => {
+    assert.equal(PublicTrade.validate(fixture.trading5.payload), null)
+    assert.equal(PublicTrade.validate(fixture.funding5.payload), null)
+  })
+
+  test('a funding row is checked as funding: a non-numeric PERIOD is rejected', () => {
+    const bad: unknown[] = [...fixture.funding5.payload[0]]; bad[4] = 'x'
+    assert.match(String(PublicTrade.validate(bad)), /^Error: period:/)
+  })
+})

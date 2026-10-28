@@ -60,16 +60,28 @@ describe('Liquidations: the [[row]] REST wrapping', () => {
   })
 })
 
-describe('Liquidations: validate() accepts what the wire sends', () => {
+describe('Liquidations: validate() on the audited fields', () => {
   // The recorded rows are all tDOGEF0:USTF0, which the static data/symbols.ts
   // snapshot does not list (the known symbols-freshness gap in
   // docs/positional-index-truth-table.md). Swapping ONLY the symbol isolates
   // the fields this audit item is about; every other value is recorded.
   const listed = (row: unknown[]): unknown[] => { const r = [...row]; r[4] = 'tBTCUSD'; return r }
 
-  test('every recorded row validates, wrapped or not (0/1 flags, null liquidationPrice)', () => {
+  test('with a listed symbol every recorded row validates, wrapped or not (0/1 flags, null liquidationPrice)', () => {
     assert.equal(Liquidations.validate(rows.map(listed)), null)
     assert.equal(Liquidations.validate(rows.map((r) => [listed(r)])), null)
+  })
+
+  test('unmodified recorded rows still fail, on symbol only (known symbols-freshness gap)', () => {
+    for (const row of rows) {
+      assert.match(String(Liquidations.validate(row)), /^Error: symbol:/)
+    }
+  })
+
+  test('a mixed collection of wrapped and bare rows decodes every row', () => {
+    const out = Liquidations.unserialize([wire[0], rows[1]]) as Array<Record<string, unknown>>
+    assert.equal(out[0].posId, rows[0][1])
+    assert.equal(out[1].posId, rows[1][1])
   })
 
   test('isMatch / isMarketSold outside 0/1 are rejected', () => {

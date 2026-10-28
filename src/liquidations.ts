@@ -8,9 +8,10 @@ import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 // Field indices per docs.bitfinex.com/reference/rest-public-liquidations (see
-// docs/positional-index-truth-table.md). LIQUIDATION_PRICE (index 11) is null
-// on some live rows. IS_MATCH / IS_MARKET_SOLD are the wire 0/1 and, with no
-// boolFields here, stay numbers.
+// docs/positional-index-truth-table.md). Index 11 is named `liquidationPrice`
+// after upstream bitfinexcom/bfx-api-node-models PR #59; the docs page calls
+// it PRICE_ACQUIRED. It is null on some live rows. IS_MATCH / IS_MARKET_SOLD
+// are the wire 0/1 and, with no boolFields here, stay numbers.
 const fields = {
 posId: 1,
   mtsUpdated: 2,
@@ -26,12 +27,12 @@ posId: 1,
  * GET /liquidations/hist wraps every row one level deeper than other
  * collections: [[["pos", ...]], [["pos", ...]], ...]. Peel that level off so a
  * full response decodes to one object per row instead of one-element arrays.
- * A bare row, or a collection of bare rows, passes through unchanged.
+ * Unwrapped per element, so a mixed collection decodes every row. A bare
+ * row (scalar elements) passes through unchanged.
  */
 function unwrapRows (data: unknown): unknown {
-  if (!Array.isArray(data) || data.length === 0) return data
-  const wrapped = data.every((e) => Array.isArray(e) && e.length === 1 && Array.isArray(e[0]))
-  return wrapped ? data.map((e) => (e as unknown[])[0]) : data
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return data
+  return data.map((e) => (Array.isArray(e) && e.length === 1 && Array.isArray(e[0]) ? e[0] : e))
 }
 
 export class Liquidations extends Model {

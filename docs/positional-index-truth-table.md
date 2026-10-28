@@ -175,7 +175,7 @@ per row. `isMatch` / `isMarketSold` are the wire 0/1 and stay numbers (no
 | 8 | IS_MATCH | `isMatch` | pre-existing (validator fixed: 0/1, was `boolValidator`) |
 | 9 | IS_MARKET_SOLD | `isMarketSold` | pre-existing (validator fixed: 0/1, was `boolValidator`) |
 | 10 | *placeholder* | — | — |
-| 11 | LIQUIDATION_PRICE | `liquidationPrice` | **added 2026-10-28** (nullable; `null` on live rows; upstream bitfinexcom/bfx-api-node-models PR #59) |
+| 11 | PRICE_ACQUIRED (docs name) | `liquidationPrice` | **added 2026-10-28** (nullable; `null` on live rows; named after upstream bitfinexcom/bfx-api-node-models PR #59) |
 
 Source: docs.bitfinex.com/reference/rest-public-liquidations.
 
@@ -277,8 +277,10 @@ not a recording.
 ### `FundingTrade` (`src/funding-trade.ts`)
 
 docs.bitfinex.com/reference/rest-auth-funding-trades: `id:0, symbol:1,
-mtsCreate:2, offerID:3, amount:4, rate:5, period:6, maker:7`. `maker` is the
-wire 0/1 and stays a number (no `boolFields`); it validates as 0 or 1 since
+mtsCreate:2, offerID:3, amount:4, rate:5, period:6, maker:7`. `maker` is
+1 or null on the wire (ws-auth-funding-trades: "1 if true, null if false";
+the REST hist row sends a null placeholder) and stays a number (no
+`boolFields`); it validates as 1, 0 or null since
 2026-10-28 (was `boolValidator`, which rejected every real row).
 
 ### `Wallet` / `WalletHist` — wallet types

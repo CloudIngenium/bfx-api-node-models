@@ -98,10 +98,11 @@ export class Order extends Model {
     const d = data as Record<string, unknown>
     // A numeric `hidden` is the wire HIDDEN field (index 24, 0/1), which is
     // what unserialize() and toJS() hand back. When the same object carries
-    // numeric `flags`, those flags already hold the HIDDEN bit and are
-    // authoritative, so the derived 0/1 must not rewrite them. A boolean
-    // `hidden` is a caller's explicit request and is still applied.
-    const wireHidden = typeof d.hidden === 'number' && Number.isFinite(d.flags)
+    // numeric `flags`, a wire 0 must not clear a HIDDEN bit those flags hold.
+    // A numeric 1 is still applied: setHidden is idempotent when the bit is
+    // already set, and `{ flags: 0, hidden: 1 }` asks for a hidden order. A
+    // boolean `hidden` is a caller's explicit request and is always applied.
+    const wireHidden = d.hidden === 0 && Number.isFinite(d.flags)
     if (d.hidden !== undefined && d.hidden !== null && !wireHidden) {
       this.setHidden(d.hidden as boolean)
     }

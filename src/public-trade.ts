@@ -46,15 +46,15 @@ export class PublicTrade extends Model {
   }
 
   static validate (data: unknown): Error | null {
-    // Optional: this runs BEFORE super.validate, so a null/undefined payload
-    // would throw here rather than reaching the guard that turns it into an
-    // Error. For an array row the property is undefined either way, so the
-    // funding/trading discrimination below is unaffected.
-    const rate = (data as Record<string, unknown> | null | undefined)?.rate
+    // The same row-width dispatch unserialize() uses, so a 5-wide funding row
+    // is checked as funding (rate AND period), not as a trading row. It runs
+    // before super.validate; isFundingShape tolerates null/undefined, which
+    // then reach the guard that turns them into an Error.
+    const funding = isFundingShape(data)
     return super.validate({
       data,
-      fields: Number.isFinite(rate) ? FUNDING_FIELDS : TRADING_FIELDS,
-      validators: Number.isFinite(rate)
+      fields: funding ? FUNDING_FIELDS : TRADING_FIELDS,
+      validators: funding
         ? { id: numberValidator, mts: dateValidator, amount: amountValidator, rate: priceValidator, period: numberValidator }
         : { id: numberValidator, mts: dateValidator, amount: amountValidator, price: priceValidator }
     })

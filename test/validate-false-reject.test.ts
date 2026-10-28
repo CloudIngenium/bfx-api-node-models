@@ -40,13 +40,17 @@ describe('FundingOffer: validate() has a validator only for mapped fields', () =
   })
 })
 
-/** docs.bitfinex.com/reference/rest-auth-funding-trades -- MAKER is 0/1 */
+/**
+ * docs.bitfinex.com/reference/ws-auth-funding-trades: MAKER is 1 if true and
+ * null if false; rest-auth-funding-trades-hist sends index 7 as a null
+ * placeholder.
+ */
 const fundingTradeRow = (maker: unknown): unknown[] => [
   636854, 'tBTCUSD', 1793200000000, 41237920, -100, 0.0002, 2, maker
 ]
 
-describe('FundingTrade: maker is the wire 0/1', () => {
-  for (const maker of [0, 1]) {
+describe('FundingTrade: maker is the wire 1 / null (0 tolerated)', () => {
+  for (const maker of [null, 1, 0]) {
     test(`maker ${maker} validates`, () => {
       assert.equal(FundingTrade.validate(fundingTradeRow(maker)), null)
     })

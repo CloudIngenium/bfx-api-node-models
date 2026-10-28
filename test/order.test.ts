@@ -675,6 +675,13 @@ describe('Order: rebuilding from its own decoded form keeps the flags', () => {
     assert.strictEqual(new Order({ symbol: 'tBTCUSD', hidden: 1 }).flags, Order.flags.HIDDEN)
     assert.strictEqual(new Order({ symbol: 'tBTCUSD', hidden: 0 }).flags, 0)
   })
+
+  test('a numeric hidden 1 next to numeric flags without the bit still sets it', () => {
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', flags: 0, hidden: 1 }).flags, Order.flags.HIDDEN)
+    assert.strictEqual(
+      new Order({ symbol: 'tBTCUSD', flags: Order.flags.POSTONLY, hidden: 1 }).flags,
+      Order.flags.POSTONLY | Order.flags.HIDDEN)
+  })
 })
 
 describe('Order: null and wire zeros in the new-order packet', () => {
