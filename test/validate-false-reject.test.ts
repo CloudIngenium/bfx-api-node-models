@@ -16,10 +16,9 @@ import {
  * page each test names, the convention test/order.test.ts uses. The
  * derivatives status rows are a public recording (fixture).
  *
- * The funding rows use a listed TRADING symbol because the static
- * data/symbols.ts snapshot has no f-prefixed entries (the known
- * symbols-freshness gap in docs/positional-index-truth-table.md); a real
- * fUSD row is still rejected on `symbol`, and only on `symbol`.
+ * The funding rows carry a real funding symbol (fUSD): the funding models
+ * validate `symbol` with the funding-symbol format check (audit round 2,
+ * test/symbol-validators.test.ts).
  */
 
 /** docs.bitfinex.com/reference/rest-auth-funding-offers */
@@ -30,11 +29,11 @@ const fundingOfferRow = (symbol: string): unknown[] => [
 
 describe('FundingOffer: validate() has a validator only for mapped fields', () => {
   test('a documented offer row validates', () => {
-    assert.equal(FundingOffer.validate(fundingOfferRow('tBTCUSD')), null)
+    assert.equal(FundingOffer.validate(fundingOfferRow('fUSD')), null)
   })
 
   test('no validator points at an unmapped field (mtsOpening, mtsLastPayout, noClose)', () => {
-    const err = FundingOffer.validate(fundingOfferRow('fUSD'))
+    const err = FundingOffer.validate(fundingOfferRow('tBTCUSD'))
     assert.doesNotMatch(String(err), /no field index declared/)
     assert.match(String(err), /^Error: symbol:/)
   })
@@ -46,7 +45,7 @@ describe('FundingOffer: validate() has a validator only for mapped fields', () =
  * placeholder.
  */
 const fundingTradeRow = (maker: unknown): unknown[] => [
-  636854, 'tBTCUSD', 1793200000000, 41237920, -100, 0.0002, 2, maker
+  636854, 'fUSD', 1793200000000, 41237920, -100, 0.0002, 2, maker
 ]
 
 describe('FundingTrade: maker is the wire 1 / null (0 tolerated)', () => {

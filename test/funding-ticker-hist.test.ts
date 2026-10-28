@@ -32,34 +32,29 @@ test('FundingTickerHist — bid, bidPeriod and ask land on their declared indice
   assert.equal(model.bidPeriod, 120, 'bidPeriod is the small day-count, not a size')
 })
 
-test('FundingTickerHist — validate() fails only on `symbol` (known data gap)', () => {
-  // src/data/symbols.ts is a trading-pairs-only snapshot with zero f-prefixed
-  // entries, so symbolValidator rejects every real funding symbol. That gap is
-  // documented in docs/positional-index-truth-table.md and predates this
-  // suite. Asserted rather than skipped, so the day symbols.ts is refreshed
-  // this test fails loudly and gets tightened to `null`.
-  const err = FundingTickerHist.validate(fixture.payload)
-  assert.ok(err instanceof Error)
-  assert.equal(err.message, 'symbol: must be a symbol currently traded on Bitfinex')
+test('FundingTickerHist — the recorded row validates unmodified, array and object form', () => {
+  // Was asserted to fail on `symbol` while symbolValidator checked the stale
+  // trading-pairs-only data/symbols.ts; `symbol` now uses the funding-symbol
+  // format check, so the real fUSD row passes.
+  assert.equal(FundingTickerHist.validate(fixture.payload), null)
+  assert.equal(FundingTickerHist.validate(fixture.expected), null)
 })
 
-test('FundingTickerHist — every non-symbol validator passes on the real values', () => {
-  // Isolates the four numeric/date validators from the symbols.ts gap above by
-  // validating the object form with a symbol that IS in the snapshot; the
-  // bid/bidPeriod/ask/mtsUpdate values are the recorded ones, unchanged.
-  const asObject = { ...fixture.expected, symbol: 'tBTCUSD' }
-  assert.equal(FundingTickerHist.validate(asObject), null)
+test('FundingTickerHist — a trading symbol is rejected on `symbol`', () => {
+  const err = FundingTickerHist.validate({ ...fixture.expected, symbol: 'tBTCUSD' })
+  assert.ok(err instanceof Error)
+  assert.equal(err.message, 'symbol: must be a funding symbol: f + a currency code')
 })
 
 test('FundingTickerHist — validate() rejects a malformed mtsUpdate', () => {
-  const row = { ...fixture.expected, symbol: 'tBTCUSD', mtsUpdate: 'yesterday' }
+  const row = { ...fixture.expected, mtsUpdate: 'yesterday' }
   const err = FundingTickerHist.validate(row)
   assert.ok(err instanceof Error)
   assert.equal(err.message, 'mtsUpdate: must be a date or positive number')
 })
 
 test('FundingTickerHist — validate() rejects a malformed bid, bidPeriod and ask', () => {
-  const base = { ...fixture.expected, symbol: 'tBTCUSD' }
+  const base = { ...fixture.expected }
 
   assert.equal(
     (FundingTickerHist.validate({ ...base, bid: -1 }) as Error).message,

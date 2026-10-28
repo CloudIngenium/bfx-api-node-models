@@ -3,7 +3,7 @@ import { dateValidator } from './validators/date.js'
 import { amountValidator } from './validators/amount.js'
 import { stringValidator } from './validators/string.js'
 import { boolValidator } from './validators/bool.js'
-import { symbolValidator } from './validators/symbol.js'
+import { fundingSymbolValidator } from './validators/funding-symbol.js'
 import { Model } from './model.js'
 
 const boolFields = ['notify', 'hidden', 'renew', 'noClose']
@@ -55,7 +55,7 @@ export class FundingLoan extends Model {
         renew: boolValidator,
         noClose: boolValidator,
         status: stringValidator,
-        symbol: symbolValidator,
+        symbol: fundingSymbolValidator,
         id: numberValidator
       }
     })

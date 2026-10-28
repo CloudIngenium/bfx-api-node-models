@@ -29,6 +29,18 @@ const SYMBOL_LIST = [
   'tPOAUSD', 'tPOABTC', 'tPOAETH', 'tLEOUSD'
 ]
 
+/**
+ * Legacy snapshot of 193 trading pairs, keyed `BASE_QUOTE` (`SYMBOLS.BTC_USD`
+ * is `'tBTCUSD'`), frozen around tLEOUSD.
+ *
+ * @deprecated Not a list of what Bitfinex trades today, and no validator
+ * reads it any more: `symbolValidator` checks the symbol FORMAT. Kept, and
+ * kept frozen, because it is a public export: refreshing it would drop the
+ * keys of delisted pairs (a breaking removal), and its `BASE_QUOTE` key
+ * derivation cannot express separated pairs (tAVAX:USD would key as
+ * `AVA_X:USD`). For the live list, read the public
+ * `conf/pub:list:pair:exchange` endpoint.
+ */
 export const SYMBOLS: Record<string, string> = {}
 
 for (const sym of SYMBOL_LIST) {

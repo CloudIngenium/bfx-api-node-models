@@ -59,7 +59,9 @@ jobs:
       # The tests import from dist/. Without this build they would exercise the LAST
       # build's index maps, and a wrong map in src/ would report a clean pass.
       - run: pnpm run build
+      # symbol-validators: every pair and currency Bitfinex lists today must still pass the
+      # symbol format checks (the conf/pub:list:* endpoints, public and unauthenticated).
       - name: Check the declared wire against the live Bitfinex API
         env:
           LIVE_WIRE: '1'
-        run: node --test test/wire-contract.test.ts
+        run: node --test test/wire-contract.test.ts test/symbol-validators.test.ts

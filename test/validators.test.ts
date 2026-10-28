@@ -129,42 +129,48 @@ test('stringValidator — an empty validOptions list rejects every string', () =
 
 // ---------------------------------------------------------------------- symbol
 
-test('symbolValidator — accepts a pair present in src/data/symbols.ts', () => {
+// Format checks, not list membership: the full live-listing coverage is in
+// test/symbol-validators.test.ts.
+
+const BAD_SYMBOL = 'must be a trading symbol: t + BASEQUOTE (3+3) or t + BASE:QUOTE'
+
+test('symbolValidator — accepts compact and separated trading pairs', () => {
   assert.equal(symbolValidator('tBTCUSD'), null)
   assert.equal(symbolValidator('tETHUSD'), null)
+  assert.equal(symbolValidator('tAVAX:USD'), null)
+  assert.equal(symbolValidator('tBTCF0:USTF0'), null)
 })
 
-test('symbolValidator — rejects unknown symbols', () => {
-  assert.equal(symbolValidator('tNOPEUSD'), 'must be a symbol currently traded on Bitfinex')
-  assert.equal(symbolValidator(''), 'must be a symbol currently traded on Bitfinex')
-  assert.equal(symbolValidator(null), 'must be a symbol currently traded on Bitfinex')
-  assert.equal(symbolValidator(42), 'must be a symbol currently traded on Bitfinex')
+test('symbolValidator — rejects malformed symbols', () => {
+  assert.equal(symbolValidator('tNOPEUSD'), BAD_SYMBOL)
+  assert.equal(symbolValidator(''), BAD_SYMBOL)
+  assert.equal(symbolValidator(null), BAD_SYMBOL)
+  assert.equal(symbolValidator(42), BAD_SYMBOL)
 })
 
-test('symbolValidator — rejects every funding symbol (known data gap)', () => {
-  // src/data/symbols.ts is a trading-pairs-only snapshot with zero
-  // f-prefixed entries, so any funding model validating `symbol` fails on
-  // correct live data. Asserted so the gap is visible, not silent; see
-  // docs/positional-index-truth-table.md "Known gap".
-  assert.equal(symbolValidator('fUSD'), 'must be a symbol currently traded on Bitfinex')
+test('symbolValidator — rejects a funding symbol (that is fundingSymbolValidator\'s job)', () => {
+  assert.equal(symbolValidator('fUSD'), BAD_SYMBOL)
 })
 
 // -------------------------------------------------------------------- currency
 
-test('currencyValidator — accepts currencies derived from the symbol list', () => {
+test('currencyValidator — accepts currency codes, legacy and current', () => {
   assert.equal(currencyValidator('BTC'), null)
   assert.equal(currencyValidator('USD'), null)
   assert.equal(currencyValidator('ETH'), null)
+  assert.equal(currencyValidator('AVAX'), null)
+  assert.equal(currencyValidator('USTF0'), null)
 })
 
-test('currencyValidator — accepts UST, which is added on top of the derived set', () => {
+test('currencyValidator — accepts UST', () => {
   assert.equal(currencyValidator('UST'), null)
 })
 
-test('currencyValidator — rejects unknown currencies', () => {
-  assert.equal(currencyValidator('NOPE'), 'must be a currency currently tradable on Bitfinex')
-  assert.equal(currencyValidator('btc'), 'must be a currency currently tradable on Bitfinex')
-  assert.equal(currencyValidator(null), 'must be a currency currently tradable on Bitfinex')
+test('currencyValidator — rejects malformed codes', () => {
+  const bad = 'must be a currency code: 3-20 uppercase letters or digits, starting with a letter'
+  assert.equal(currencyValidator('NO'), bad)
+  assert.equal(currencyValidator('btc'), bad)
+  assert.equal(currencyValidator(null), bad)
 })
 
 // -------------------------------------------------------------------- nullable
@@ -190,7 +196,7 @@ test('nullable — an invalid value returns the inner validator\'s message verba
   assert.equal(nullable(numberValidator)('not-a-number'), 'must be a number')
   assert.equal(nullable(priceValidator)(-1), 'must be a number greater than zero')
   assert.equal(nullable(dateValidator)('yesterday'), 'must be a date or positive number')
-  assert.equal(nullable(symbolValidator)('fUSD'), 'must be a symbol currently traded on Bitfinex')
+  assert.equal(nullable(symbolValidator)('fUSD'), BAD_SYMBOL)
 })
 
 test('nullable — the wrapper is reusable and does not leak state between calls', () => {

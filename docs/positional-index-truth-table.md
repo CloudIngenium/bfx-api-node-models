@@ -88,13 +88,14 @@ correction, not a breaking change for real traffic.
 
 Source: docs.bitfinex.com/reference/rest-public-tickers.
 
-**Known gap (not fixed here, out of PR-1 scope):** `symbolValidator` reads
-from `src/data/symbols.ts`, a static trading-pairs-only snapshot with zero
-funding-currency (`f`-prefixed) entries — so `FundingTicker.validate()`
-always fails the `symbol` field even on correct real data (e.g. `fUSD`).
-Fixing `data/symbols.ts` is a broader, cross-cutting data-freshness task
-(it backs every model's symbol validation, not just funding-ticker) and is
-a follow-up, not part of this PR.
+**Former gap, fixed in audit round 2 (2026-10-28):** `symbolValidator` used
+to read from `src/data/symbols.ts`, a static trading-pairs-only snapshot with
+zero funding-currency (`f`-prefixed) entries, so `FundingTicker.validate()`
+always failed the `symbol` field on real data (e.g. `fUSD`). The symbol and
+currency validators now check format, the funding models validate `symbol`
+with `fundingSymbolValidator`, and `test/symbol-validators.test.ts` holds
+them to the live `conf/pub:list:*` listings
+(`test/recordings/conf-symbol-lists.json`).
 
 ## `FundingTickerChannel` (`src/funding-ticker-channel.ts`) — WS `fticker` channel — **new in PR-1**
 

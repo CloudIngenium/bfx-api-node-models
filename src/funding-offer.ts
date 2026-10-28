@@ -3,7 +3,7 @@ import { dateValidator } from './validators/date.js'
 import { amountValidator } from './validators/amount.js'
 import { stringValidator } from './validators/string.js'
 import { boolValidator } from './validators/bool.js'
-import { symbolValidator } from './validators/symbol.js'
+import { fundingSymbolValidator } from './validators/funding-symbol.js'
 import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
@@ -55,7 +55,7 @@ export class FundingOffer extends Model {
         hidden: boolValidator,
         renew: boolValidator,
         status: stringValidator,
-        symbol: symbolValidator,
+        symbol: fundingSymbolValidator,
         type: stringValidator,
         id: numberValidator
       }
