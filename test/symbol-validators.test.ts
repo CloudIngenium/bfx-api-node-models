@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import {
   CURRENCIES, FundingCredit, FundingLoan, FundingOffer, FundingTicker, FundingTickerHist,
-  FundingTrade, Liquidations, Order, SYMBOLS, TradingTicker
+  FundingInfo, FundingTrade, Liquidations, Order, SYMBOLS, TradingTicker
 } from '../dist/index.js'
 import { currencyValidator } from '../dist/validators/currency.js'
 import { fundingSymbolValidator } from '../dist/validators/funding-symbol.js'
@@ -161,6 +161,14 @@ describe('models: the funding side validates f-symbols, the trading side t-symbo
     const row = (s: string): unknown[] => [636854, s, 1793200000000, 41237920, -100, 0.0002, 2, null]
     assert.equal(FundingTrade.validate(row('fUSD')), null)
     assert.match(String(FundingTrade.validate(row('tBTCUSD'))), /^Error: symbol:/)
+  })
+
+  test('FundingInfo accepts an f-symbol and rejects a trading symbol', () => {
+    const info = (symbol: string): Record<string, unknown> => ({
+      symbol, yieldLoan: 0.0002, yieldLend: 0.0001, durationLoan: 30, durationLend: 2
+    })
+    assert.equal(FundingInfo.validate(info('fUSD')), null)
+    assert.match(String(FundingInfo.validate(info('tBTCUSD'))), /^Error: symbol:/)
   })
 
   test('the recorded FundingTicker and FundingTickerHist rows validate unmodified', () => {

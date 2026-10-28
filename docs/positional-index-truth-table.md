@@ -270,6 +270,7 @@ orderPrice:7, maker:8, fee:9, feeCurrency:10, cid:11`.
 | Index | Field | Model field | Status |
 |---|---|---|---|
 | 3 | ORDER_ID | `orderID` | pre-existing (validator fixed 2026-10-28: a number, was `stringValidator`) |
+| 9, 10 | FEE, FEE_CURRENCY | `fee`, `feeCurrency` | pre-existing (validators nullable 2026-10-28: a `te` row sends both as `null`; the fee arrives on `tu`) |
 | 11 | CID | `cid` | **added 2026-10-28** (models-trade-cid-05; nullable — `null` for orders placed without a client id, absent on 11-element rows) |
 
 Trade rows are authenticated, so the tests use rows shaped per the docs page,

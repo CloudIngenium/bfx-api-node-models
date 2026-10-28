@@ -56,3 +56,36 @@ describe('Trade: orderID is a number on the wire', () => {
     assert.match(String(Trade.validate(row)), /^Error: orderID:/)
   })
 })
+
+/**
+ * A `te` (trade executed) event per docs.bitfinex.com/reference/ws-auth-trades:
+ * the same 12 positions, with FEE and FEE_CURRENCY null because the fee is only
+ * known on the following `tu` (trade update). Authenticated, so no recording
+ * exists; the row is doc-shaped like wireTradeRow above.
+ */
+const wireTeRow: unknown[] = [
+  402088407, 'tBTCUSD', 1793200000000, 1185815098, 0.01, 80000,
+  'EXCHANGE LIMIT', 80000, 1, null, null, 1793199999001
+]
+
+describe('Trade: a te row has null FEE and FEE_CURRENCY', () => {
+  test('the te row validates and decodes the fee fields as null', () => {
+    assert.equal(Trade.validate(wireTeRow), null)
+    const t = new Trade(wireTeRow)
+    assert.equal(t.fee, null)
+    assert.equal(t.feeCurrency, null)
+  })
+
+  test('the tu row (fees populated) still validates', () => {
+    assert.equal(Trade.validate(wireTradeRow(1793199999001)), null)
+  })
+
+  test('a non-numeric fee and a malformed fee currency are still rejected', () => {
+    const badFee = [...wireTeRow]
+    badFee[9] = 'abc'
+    assert.match(String(Trade.validate(badFee)), /^Error: fee:/)
+    const badCcy = [...wireTeRow]
+    badCcy[10] = 42
+    assert.match(String(Trade.validate(badCcy)), /^Error: feeCurrency:/)
+  })
+})
