@@ -45,6 +45,11 @@ const fields = {
 
 let lastCID = Date.now()
 
+// `+null === 0` and `+'' === 0`, so a bare `Number.isNaN(+x)` guard let null
+// through as 0 (price "0.0000", lev 0, cid 0). Only a real finite number counts.
+const isNum = (v: unknown): boolean =>
+  v !== null && v !== undefined && v !== '' && Number.isFinite(+(v as number))
+
 interface ApiInterface {
   updateOrder? (changes: Record<string, unknown>): Promise<unknown>
   submitOrder? (params: { order: Order }): Promise<unknown[]>
@@ -91,7 +96,15 @@ export class Order extends Model {
 
     if (!this.flags) this.flags = 0
     const d = data as Record<string, unknown>
-    if (d.hidden !== undefined) this.setHidden(d.hidden as boolean)
+    // A numeric `hidden` is the wire HIDDEN field (index 24, 0/1), which is
+    // what unserialize() and toJS() hand back. When the same object carries
+    // numeric `flags`, those flags already hold the HIDDEN bit and are
+    // authoritative, so the derived 0/1 must not rewrite them. A boolean
+    // `hidden` is a caller's explicit request and is still applied.
+    const wireHidden = typeof d.hidden === 'number' && Number.isFinite(d.flags)
+    if (d.hidden !== undefined && d.hidden !== null && !wireHidden) {
+      this.setHidden(d.hidden as boolean)
+    }
     if (d.visibleOnHit !== undefined) this.setVisibleOnHit(d.visibleOnHit as boolean)
     if (d.postonly !== undefined) this.setPostOnly(d.postonly as boolean)
     if (d.reduceonly !== undefined) this.setReduceOnly(d.reduceonly as boolean)
@@ -185,8 +198,14 @@ export class Order extends Model {
   setReduceOnly (v: boolean): number | undefined { return this.modifyFlag(Order.flags.REDUCE_ONLY, v) }
 
   modifyFlag (flag: number, active: boolean): number | undefined {
-    if (!!(this.flags & flag) === active) return
-    this.flags += active ? flag : -flag
+    // Coerce: the 0/1 a decoded order carries must act like the boolean. The
+    // guard below compared `!!(flags & flag) === 0`, which is never true, so a
+    // numeric 0 subtracted a bit that was not set (flags -64, which reads as
+    // OCO + reduce-only + pos-close + post-only) and a numeric 1 added a bit
+    // that already was (64 -> 128, hidden lost).
+    const on = !!active
+    if (!!(this.flags & flag) === on) return
+    this.flags += on ? flag : -flag
     return this.flags
   }
 
@@ -331,7 +350,7 @@ export class Order extends Model {
 
     const data: Record<string, unknown> = {
       gid: this.gid,
-      cid: Number.isFinite(+this.cid) ? +this.cid : lastCID++,
+      cid: isNum(this.cid) ? +this.cid : lastCID++,
       symbol: this.symbol,
       type: this.type,
       amount: prepareAmount(+this.amount),
@@ -340,12 +359,15 @@ export class Order extends Model {
       tif: this.tif
     }
 
-    if (!Number.isNaN(+this.price)) data.price = preparePrice(+this.price)
-    if (!Number.isNaN(+this.lev)) data.lev = +this.lev
-    if (this.priceTrailing !== null && !Number.isNaN(+this.priceTrailing)) {
+    if (isNum(this.price)) data.price = preparePrice(+this.price)
+    if (isNum(this.lev)) data.lev = +this.lev
+    // A decoded wire order carries 0 in PRICE_TRAILING / PRICE_AUX_LIMIT when
+    // the type does not use them; 0 is never a valid trailing distance or aux
+    // price, so it is treated as unset rather than re-sent as "0.0000".
+    if (isNum(this.priceTrailing) && +this.priceTrailing !== 0) {
       data.price_trailing = preparePrice(+this.priceTrailing)
     }
-    if (this.priceAuxLimit !== null && !Number.isNaN(+this.priceAuxLimit)) {
+    if (isNum(this.priceAuxLimit) && +this.priceAuxLimit !== 0) {
       if (this.flags & Order.flags.OCO) {
         data.price_oco_stop = preparePrice(+this.priceAuxLimit)
         data.cid_oco = this.cidOCO

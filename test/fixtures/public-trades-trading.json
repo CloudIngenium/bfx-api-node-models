@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "source": "GET https://api-pub.bitfinex.com/v2/trades/tBTCUSD/hist?limit=5",
+    "recorded": "2026-10-28",
+    "elements": 4,
+    "note": "Public, unauthenticated, no-money endpoint. Exactly 5 TRADING rows: the collection shape that used to decode with the funding layout because the dispatch tested the collection length (models-publictrade-5rows-04). rows are [label, row]."
+  },
+  "rows": [
+    ["2001204986", [2001204986, 1793212060146, 0.00036778, 80938]],
+    ["2001204985", [2001204985, 1793212059936, 0.0002, 80938]],
+    ["2001204984", [2001204984, 1793212058761, 0.0002, 80930]],
+    ["2001204982", [2001204982, 1793212058760, 0.0005187, 80928]],
+    ["2001204983", [2001204983, 1793212058760, 0.0002, 80929]]
+  ]
+}

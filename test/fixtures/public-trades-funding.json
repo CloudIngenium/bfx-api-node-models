@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "source": "GET https://api-pub.bitfinex.com/v2/trades/fUSD/hist?limit=5",
+    "recorded": "2026-10-28",
+    "elements": 5,
+    "note": "Public, unauthenticated, no-money endpoint. 5 FUNDING rows [ID, MTS, AMOUNT, RATE, PERIOD], the counterpart of public-trades-trading.json. rows are [label, row]."
+  },
+  "rows": [
+    ["434921426", [434921426, 1793212064000, -200, 0.00012516, 2]],
+    ["434921427", [434921427, 1793212064000, -300, 0.0001305, 2]],
+    ["434921423", [434921423, 1793211767000, -647.83, 0.00012959, 2]],
+    ["434921424", [434921424, 1793211767000, -352.17, 0.0001302, 2]],
+    ["434921384", [434921384, 1793211253000, -3562, 0.00013926, 2]]
+  ]
+}

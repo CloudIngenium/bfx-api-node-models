@@ -11,6 +11,7 @@ import { TradingTickerHist } from '../dist/trading-ticker-hist.js'
 import { FundingTickerHist } from '../dist/funding-ticker-hist.js'
 import { SymbolDetails } from '../dist/symbol-details.js'
 import { StatusMessagesDeriv } from '../dist/status-messages-deriv.js'
+import { PublicTrade } from '../dist/public-trade.js'
 
 // THIS PACKAGE DEFINES THE INDEX MAPS THE WHOLE FORK FAMILY READS.
 //
@@ -112,6 +113,16 @@ const CONTRACTS: readonly WireContract[] = [
     Model: FundingTickerChannel as Ctor,
     probes: [],
     whyNoLive: 'WS-only; live width is asserted in bitfinex-api-node/test/lib/wire-contract.ts'
+  },
+  {
+    fixture: 'public-trades-trading',
+    Model: PublicTrade as Ctor,
+    probes: [{ path: '/trades/tBTCUSD/hist?limit=5', width: 4, rows: (b) => b as unknown[][] }]
+  },
+  {
+    fixture: 'public-trades-funding',
+    Model: PublicTrade as Ctor,
+    probes: [{ path: '/trades/fUSD/hist?limit=5', width: 5, rows: (b) => b as unknown[][] }]
   },
   {
     fixture: 'symbol-details',
