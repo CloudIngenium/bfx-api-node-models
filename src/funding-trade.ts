@@ -1,7 +1,7 @@
 import { numberValidator } from './validators/number.js'
 import { dateValidator } from './validators/date.js'
 import { amountValidator } from './validators/amount.js'
-import { boolValidator } from './validators/bool.js'
+import { flagValidator } from './validators/flag.js'
 import { priceValidator } from './validators/price.js'
 import { symbolValidator } from './validators/symbol.js'
 import { Model } from './model.js'
@@ -37,7 +37,8 @@ export class FundingTrade extends Model {
         amount: amountValidator,
         rate: priceValidator,
         period: numberValidator,
-        maker: boolValidator
+        // MAKER is the wire 0/1 and, with no boolFields here, stays a number.
+        maker: flagValidator
       }
     })
   }

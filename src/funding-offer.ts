@@ -4,6 +4,7 @@ import { amountValidator } from './validators/amount.js'
 import { stringValidator } from './validators/string.js'
 import { boolValidator } from './validators/bool.js'
 import { symbolValidator } from './validators/symbol.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 const boolFields = ['notify', 'hidden', 'renew']
@@ -40,18 +41,19 @@ export class FundingOffer extends Model {
       validators: {
         mtsCreate: dateValidator,
         mtsUpdate: dateValidator,
-        mtsOpening: dateValidator,
-        mtsLastPayout: dateValidator,
+        // mtsOpening, mtsLastPayout and noClose belong to FundingCredit /
+        // FundingLoan rows; an offer row has no such slot, so a validator
+        // for them failed every array input with "no field index declared".
         amountOrig: amountValidator,
         amount: amountValidator,
         flags: numberValidator,
         rate: numberValidator,
         period: numberValidator,
-        rateReal: numberValidator,
+        // Index 20 is a documented placeholder that live rows send as null.
+        rateReal: nullable(numberValidator),
         notify: boolValidator,
         hidden: boolValidator,
         renew: boolValidator,
-        noClose: boolValidator,
         status: stringValidator,
         symbol: symbolValidator,
         type: stringValidator,

@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "source": "GET https://api-pub.bitfinex.com/v2/liquidations/hist?limit=5",
+    "recorded": "2026-10-28",
+    "elements": 12,
+    "note": "Public, unauthenticated, no-money endpoint. The live response wraps every row one level deeper ([[row]], i.e. [[[\"pos\", ...]], ...]); rows here hold the inner 12-element row verbatim and the tests re-wrap them to rebuild the wire shape. Index 11 (LIQUIDATION_PRICE) is null on one recorded row. rows are [label, row], label = POS_ID:MTS."
+  },
+  "rows": [
+    ["194785434:1793200266526", ["pos",194785434,1793200266526,null,"tDOGEF0:USTF0",-1e-8,0.079283,null,1,1,null,0.079304]],
+    ["194785378:1793200257782", ["pos",194785378,1793200257782,null,"tDOGEF0:USTF0",-1e-8,0.079283,null,0,0,null,0.079263]],
+    ["194785378:1793200257780", ["pos",194785378,1793200257780,null,"tDOGEF0:USTF0",-1e-8,0.079283,null,0,1,null,null]],
+    ["194785374:1793199935193", ["pos",194785374,1793199935193,null,"tDOGEF0:USTF0",1e-8,0.079272838908,null,1,1,null,0.079244]],
+    ["194785271:1793199927491", ["pos",194785271,1793199927491,null,"tDOGEF0:USTF0",1e-8,0.079272838908,null,0,0,null,0.0792925]]
+  ]
+}

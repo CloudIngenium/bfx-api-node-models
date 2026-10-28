@@ -6,9 +6,13 @@ import { boolValidator } from './validators/bool.js'
 import { priceValidator } from './validators/price.js'
 import { symbolValidator } from './validators/symbol.js'
 import { currencyValidator } from './validators/currency.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 import { Order } from './order.js'
 
+// Field indices per docs.bitfinex.com/reference/rest-auth-trades (see
+// docs/positional-index-truth-table.md). CID (index 11) is null for trades of
+// orders placed without a client id, and absent on 11-element rows.
 const boolFields = ['maker']
 const fields = {
 id: 0,
@@ -21,7 +25,8 @@ id: 0,
   orderPrice: 7,
   maker: 8,
   fee: 9,
-  feeCurrency: 10
+  feeCurrency: 10,
+  cid: 11
 }
 
 export class Trade extends Model {
@@ -40,14 +45,15 @@ export class Trade extends Model {
         id: numberValidator,
         symbol: symbolValidator,
         mtsCreate: dateValidator,
-        orderID: stringValidator,
+        orderID: numberValidator,
         execAmount: amountValidator,
         execPrice: priceValidator,
         orderType: (v: unknown) => stringValidator(v as string, Object.values(Order.type)),
         orderPrice: priceValidator,
         maker: boolValidator,
         fee: numberValidator,
-        feeCurrency: currencyValidator
+        feeCurrency: currencyValidator,
+        cid: nullable(numberValidator)
       }
     })
   }
