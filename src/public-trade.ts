@@ -7,6 +7,22 @@ import { Model } from './model.js'
 export const TRADING_FIELDS = { id: 0, mts: 1, amount: 2, price: 3 }
 export const FUNDING_FIELDS = { id: 0, mts: 1, amount: 2, rate: 3, period: 4 }
 
+/**
+ * Funding vs trading is a property of ONE ROW: 5 wide (or an object with a
+ * `rate`) is funding, 4 wide is trading. For a collection, look at its first
+ * row. Until 2026-10-28 the collection's own length counted too, so a 5-row
+ * trading snapshot (an illiquid pair, `limit=5`) decoded with the funding
+ * layout: price undefined, the price landing in `rate`.
+ */
+const isFundingShape = (data: unknown): boolean => {
+  const first = Array.isArray(data) && (Array.isArray(data[0]) || (typeof data[0] === 'object' && data[0] !== null))
+    ? data[0]
+    : data
+  if (Array.isArray(first)) return first.length === 5
+  const rate = (first as Record<string, unknown> | null)?.rate
+  return rate !== undefined && rate !== null
+}
+
 export class PublicTrade extends Model {
   id!: number
   mts!: number
@@ -16,25 +32,12 @@ export class PublicTrade extends Model {
   period!: number
 
   constructor (data: unknown = {}) {
-    if (Array.isArray(data)) {
-      if (data.length === 5) super({ data, fields: FUNDING_FIELDS })
-      else super({ data, fields: TRADING_FIELDS })
-    } else if (typeof data === 'object' && data !== null) {
-      if ((data as Record<string, unknown>).rate) super({ data, fields: FUNDING_FIELDS })
-      else super({ data, fields: TRADING_FIELDS })
-    } else {
-      throw new Error('unknown data type')
-    }
+    if (typeof data !== 'object' || data === null) throw new Error('unknown data type')
+    super({ data, fields: isFundingShape(data) ? FUNDING_FIELDS : TRADING_FIELDS })
   }
 
   static unserialize (data: unknown): Record<string, unknown> | Record<string, unknown>[] {
-    const d = data as unknown[]
-    if ((Array.isArray(d[0]) && (d[0] as unknown[]).length === 5) ||
-        (typeof d[0] === 'object' && d[0] !== null && (d[0] as Record<string, unknown>).rate) ||
-        d.length === 5) {
-      return super.unserialize({ data, fields: FUNDING_FIELDS })
-    }
-    return super.unserialize({ data, fields: TRADING_FIELDS })
+    return super.unserialize({ data, fields: isFundingShape(data) ? FUNDING_FIELDS : TRADING_FIELDS })
   }
 
   toString (): string {
@@ -43,15 +46,15 @@ export class PublicTrade extends Model {
   }
 
   static validate (data: unknown): Error | null {
-    // Optional: this runs BEFORE super.validate, so a null/undefined payload
-    // would throw here rather than reaching the guard that turns it into an
-    // Error. For an array row the property is undefined either way, so the
-    // funding/trading discrimination below is unaffected.
-    const rate = (data as Record<string, unknown> | null | undefined)?.rate
+    // The same row-width dispatch unserialize() uses, so a 5-wide funding row
+    // is checked as funding (rate AND period), not as a trading row. It runs
+    // before super.validate; isFundingShape tolerates null/undefined, which
+    // then reach the guard that turns them into an Error.
+    const funding = isFundingShape(data)
     return super.validate({
       data,
-      fields: Number.isFinite(rate) ? FUNDING_FIELDS : TRADING_FIELDS,
-      validators: Number.isFinite(rate)
+      fields: funding ? FUNDING_FIELDS : TRADING_FIELDS,
+      validators: funding
         ? { id: numberValidator, mts: dateValidator, amount: amountValidator, rate: priceValidator, period: numberValidator }
         : { id: numberValidator, mts: dateValidator, amount: amountValidator, price: priceValidator }
     })

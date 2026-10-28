@@ -614,3 +614,109 @@ describe('Order: rendering and statics', () => {
       Object.hasOwn(new Order({ symbol: 'tBTCUSD' }).toPreview(), 'lev'), false)
   })
 })
+
+/**
+ * Audit 2026-10-28 (models-order-hidden-flag-01, models-order-packet-null-07).
+ *
+ * Order rows are authenticated, so no public recording exists: these rows are
+ * shaped exactly per docs.bitfinex.com/reference/rest-auth-retrieve-orders
+ * (FLAGS at 12, HIDDEN at 24, PRICE_TRAILING 18, PRICE_AUX_LIMIT 19), the same
+ * convention the rest of this file uses.
+ */
+const wireOrderRow = (flags: number, hidden: number): unknown[] => {
+  const r: unknown[] = Array.from({ length: 32 }, () => null)
+  r[0] = 1001; r[1] = null; r[2] = null; r[3] = 'tBTCUSD'
+  r[4] = 1793200000000; r[5] = 1793200000000
+  r[6] = 0.01; r[7] = 0.01; r[8] = 'EXCHANGE LIMIT'
+  r[12] = flags; r[13] = 'ACTIVE'
+  r[16] = 80000; r[17] = 0; r[18] = 0; r[19] = 0
+  r[23] = 0; r[24] = hidden
+  return r
+}
+
+describe('Order: rebuilding from its own decoded form keeps the flags', () => {
+  for (const [flags, hidden] of [[0, 0], [Order.flags.HIDDEN, 1], [Order.flags.POSTONLY, 0], [Order.flags.HIDDEN | Order.flags.POSTONLY, 1]]) {
+    test(`new Order(Order.unserialize(row)) keeps flags ${flags} (hidden ${hidden})`, () => {
+      const row = wireOrderRow(flags, hidden)
+      const o = new Order(Order.unserialize(row))
+      assert.strictEqual(o.flags, flags)
+      assert.strictEqual(o.isHidden(), hidden === 1)
+      assert.strictEqual(o.isOCO(), false)
+      assert.strictEqual(o.isReduceOnly(), false)
+      assert.strictEqual(o.isPositionClose(), false)
+    })
+
+    test(`new Order(order.toJS()) keeps flags ${flags} (hidden ${hidden})`, () => {
+      const o = new Order(new Order(wireOrderRow(flags, hidden)).toJS())
+      assert.strictEqual(o.flags, flags)
+      const p = o.toNewOrderPacket()
+      assert.strictEqual(p.flags, flags)
+      assert.strictEqual(p.price_oco_stop, undefined)
+    })
+  }
+
+  test('a numeric 0/1 passed to a setter acts like the boolean', () => {
+    const o = new Order({ symbol: 'tBTCUSD' })
+    o.setPostOnly(0 as unknown as boolean)
+    assert.strictEqual(o.flags, 0)
+    o.setPostOnly(1 as unknown as boolean)
+    o.setPostOnly(1 as unknown as boolean)
+    assert.strictEqual(o.flags, Order.flags.POSTONLY)
+    o.setPostOnly(0 as unknown as boolean)
+    assert.strictEqual(o.flags, 0)
+  })
+
+  test('an explicit boolean hidden still sets and clears the bit', () => {
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', hidden: true }).flags, Order.flags.HIDDEN)
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', flags: Order.flags.HIDDEN, hidden: false }).flags, 0)
+  })
+
+  test('a numeric hidden without flags still sets the bit', () => {
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', hidden: 1 }).flags, Order.flags.HIDDEN)
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', hidden: 0 }).flags, 0)
+  })
+
+  test('a numeric hidden 1 next to numeric flags without the bit still sets it', () => {
+    assert.strictEqual(new Order({ symbol: 'tBTCUSD', flags: 0, hidden: 1 }).flags, Order.flags.HIDDEN)
+    assert.strictEqual(
+      new Order({ symbol: 'tBTCUSD', flags: Order.flags.POSTONLY, hidden: 1 }).flags,
+      Order.flags.POSTONLY | Order.flags.HIDDEN)
+  })
+})
+
+describe('Order: null and wire zeros in the new-order packet', () => {
+  const base = { symbol: 'tBTCUSD', amount: 1, type: 'EXCHANGE LIMIT', price: 80000 }
+
+  test('a null price is omitted, not sent as "0.0000"', () => {
+    const p = new Order({ ...base, price: null }).toNewOrderPacket()
+    assert.strictEqual(Object.hasOwn(p, 'price'), false)
+  })
+
+  test('a null lev is omitted, not sent as 0', () => {
+    const p = new Order({ ...base, lev: null }).toNewOrderPacket()
+    assert.strictEqual(Object.hasOwn(p, 'lev'), false)
+  })
+
+  test('a null cid gets a generated cid, never 0', () => {
+    const a = new Order({ ...base, cid: null }).toNewOrderPacket()
+    const b = new Order({ ...base, cid: null }).toNewOrderPacket()
+    assert.notStrictEqual(a.cid, 0)
+    assert.notStrictEqual(a.cid, b.cid)
+  })
+
+  test('wire-decoded zero trailing / aux prices are not re-sent', () => {
+    const p = new Order(Order.unserialize(wireOrderRow(0, 0))).toNewOrderPacket()
+    assert.strictEqual(Object.hasOwn(p, 'price_trailing'), false)
+    assert.strictEqual(Object.hasOwn(p, 'price_aux_limit'), false)
+    assert.strictEqual(p.price, '80000')
+  })
+
+  test('a recreated wire order with cid null does not resubmit cid 0', async () => {
+    let sent: Record<string, unknown> | undefined
+    const api = fakeApi({ submitOrder: async ({ order }: { order: Order }) => { sent = order.toNewOrderPacket(); return [] } })
+    const o = new Order(Order.unserialize(wireOrderRow(0, 0)), api)
+    await o.recreate()
+    assert.ok(sent)
+    assert.notStrictEqual(sent!.cid, 0)
+  })
+})

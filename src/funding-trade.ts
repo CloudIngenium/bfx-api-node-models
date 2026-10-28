@@ -1,7 +1,8 @@
 import { numberValidator } from './validators/number.js'
 import { dateValidator } from './validators/date.js'
 import { amountValidator } from './validators/amount.js'
-import { boolValidator } from './validators/bool.js'
+import { flagValidator } from './validators/flag.js'
+import { nullable } from './validators/nullable.js'
 import { priceValidator } from './validators/price.js'
 import { symbolValidator } from './validators/symbol.js'
 import { Model } from './model.js'
@@ -37,7 +38,10 @@ export class FundingTrade extends Model {
         amount: amountValidator,
         rate: priceValidator,
         period: numberValidator,
-        maker: boolValidator
+        // MAKER is 1 or null on the wire (ws-auth-funding-trades: "1 if true,
+        // null if false"; REST hist sends a null placeholder). No boolFields
+        // here, so it stays a number; 0 is tolerated.
+        maker: nullable(flagValidator)
       }
     })
   }

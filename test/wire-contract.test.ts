@@ -11,6 +11,8 @@ import { TradingTickerHist } from '../dist/trading-ticker-hist.js'
 import { FundingTickerHist } from '../dist/funding-ticker-hist.js'
 import { SymbolDetails } from '../dist/symbol-details.js'
 import { StatusMessagesDeriv } from '../dist/status-messages-deriv.js'
+import { PublicTrade } from '../dist/public-trade.js'
+import { Liquidations } from '../dist/liquidations.js'
 
 // THIS PACKAGE DEFINES THE INDEX MAPS THE WHOLE FORK FAMILY READS.
 //
@@ -99,6 +101,22 @@ const CONTRACTS: readonly WireContract[] = [
     probes: [{ path: '/status/deriv?keys=tBTCF0:USTF0', width: 24, rows: firstRow }]
   },
   {
+    // Every derivative, so a width that differs per key cannot hide behind tBTCF0.
+    fixture: 'status-messages-deriv-all',
+    Model: StatusMessagesDeriv as Ctor,
+    probes: [{ path: '/status/deriv?keys=ALL', width: 24, rows: (b) => b as unknown[][] }]
+  },
+  {
+    // The response wraps each row one level deeper: [[row], [row], ...].
+    fixture: 'liquidations',
+    Model: Liquidations as Ctor,
+    probes: [{
+      path: '/liquidations/hist?limit=5',
+      width: 12,
+      rows: (b) => (b as unknown[][][]).map((wrapped) => wrapped[0])
+    }]
+  },
+  {
     fixture: 'trading-ticker-channel',
     Model: TradingTickerChannel as Ctor,
     probes: [],
@@ -112,6 +130,16 @@ const CONTRACTS: readonly WireContract[] = [
     Model: FundingTickerChannel as Ctor,
     probes: [],
     whyNoLive: 'WS-only; live width is asserted in bitfinex-api-node/test/lib/wire-contract.ts'
+  },
+  {
+    fixture: 'public-trades-trading',
+    Model: PublicTrade as Ctor,
+    probes: [{ path: '/trades/tBTCUSD/hist?limit=5', width: 4, rows: (b) => b as unknown[][] }]
+  },
+  {
+    fixture: 'public-trades-funding',
+    Model: PublicTrade as Ctor,
+    probes: [{ path: '/trades/fUSD/hist?limit=5', width: 5, rows: (b) => b as unknown[][] }]
   },
   {
     fixture: 'symbol-details',

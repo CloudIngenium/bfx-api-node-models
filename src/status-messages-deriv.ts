@@ -1,6 +1,8 @@
 import { stringValidator } from './validators/string.js'
 import { priceValidator } from './validators/price.js'
 import { dateValidator } from './validators/date.js'
+import { numberValidator } from './validators/number.js'
+import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
 
 // Field indices per docs.bitfinex.com/reference/rest-public-derivatives-status
@@ -47,13 +49,16 @@ export class StatusMessagesDeriv extends Model {
         priceSpot: priceValidator,
         fundBal: priceValidator,
         nextFundingEvtMts: dateValidator,
-        fundingAccrued: priceValidator,
+        // Funding is signed: shorts pay longs whenever the premium is
+        // negative (62 of 92 rows in the recorded keys=ALL capture).
+        fundingAccrued: numberValidator,
         fundingStep: priceValidator,
-        currentFunding: priceValidator,
+        currentFunding: numberValidator,
         markPrice: priceValidator,
         openInterest: priceValidator,
         clampMin: priceValidator,
-        clampMax: priceValidator
+        // Live rows can send null here (recorded on tSPAIN35IXF0:USTF0).
+        clampMax: nullable(priceValidator)
       }
     })
   }

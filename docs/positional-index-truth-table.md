@@ -5,8 +5,9 @@
 > review artifact** for every PR that adopts this library as a Bitfinex
 > decoder (PR-1 through PR-5). It is cross-checked against the official
 > Bitfinex API docs (docs.bitfinex.com) and, where noted, against real
-> **public, unauthenticated, no-money** payload captures recorded 2026-07-05
-> (see `test/fixtures/*.json`). Every model file also carries a short
+> **public, unauthenticated, no-money** payload captures recorded 2026-07-05,
+> 2026-09-25 (WS ticker pushes) and 2026-10-28 (liquidations, public trades,
+> `status/deriv?keys=ALL`, WS ticker frames; see `test/fixtures/*.json`). Every model file also carries a short
 > in-source comment pointing back to the relevant doc page.
 >
 > Column key: **Model** = the class in `src/`. **Live-verified** = a real
@@ -19,8 +20,16 @@
 ## `StatusMessagesDeriv` (`src/status-messages-deriv.ts`)
 
 REST `GET /v2/status/deriv?keys=...` array. **Live-verified**
-(`test/fixtures/status-messages-deriv.json`). Completed in PR-1 — see H1:
+(`test/fixtures/status-messages-deriv.json`, and every key in
+`test/fixtures/status-messages-deriv-all.json`). Completed in PR-1 — see H1:
 additive only, no existing index shifted.
+
+Validators (audit 2026-10-28, models-validate-false-reject-06): funding is
+signed, so `fundingAccrued` (9) and `currentFunding` (12) validate as any
+finite number — 62 of the 92 rows in the `keys=ALL` capture carry a negative
+value in one of them, and the old greater-than-zero check rejected every one.
+`clampMax` (23) accepts `null`, which the capture shows for
+`tSPAIN35IXF0:USTF0`.
 
 | Index | Field | Model field | Status |
 |---|---|---|---|
@@ -75,7 +84,7 @@ correction, not a breaking change for real traffic.
 | 13 | LOW | `low` | pre-existing |
 | 14–15 | *reserved* | — | — |
 | 16 | FRR_AMOUNT_AVAILABLE | `frrAmountAvailable` | **added PR-1** |
-| 17 | FIRST_TRADE | `firstTrade` | **added PR-1** (REST-only) |
+| 17 | FIRST_TRADE | `firstTrade` | **added PR-1** (also on the WS `fticker` push, at index 16 — see below) |
 
 Source: docs.bitfinex.com/reference/rest-public-tickers.
 
@@ -90,8 +99,10 @@ a follow-up, not part of this PR.
 ## `FundingTickerChannel` (`src/funding-ticker-channel.ts`) — WS `fticker` channel — **new in PR-1**
 
 WS public `fticker` channel payload for a funding currency. Channel-scoped
-(no `SYMBOL`), and a push message (no `FIRST_TRADE`, which is REST-only).
-Every field is at index-1 relative to `FundingTicker`. **Live-verified**
+(no `SYMBOL`), so every field is at index-1 relative to `FundingTicker`,
+`FIRST_TRADE` included: an earlier revision of this table called it
+REST-only, but recorded `fUSD` ticker frames (2026-09-25 and 2026-10-28)
+are 17 elements long and end in `1469734163000` at index 16. **Live-verified**
 (`test/fixtures/funding-ticker-channel.json`, derived from the same `fUSD`
 capture, reshaped per the WS docs). This closes the funding-channel model
 gap named in the design doc — `BfxLendingBot/modules/exchange/
@@ -115,8 +126,89 @@ shape today (`data[0..9]`, missing volume/high/low/frrAmountAvailable).
 | 12 | LOW | `low` |
 | 13–14 | *reserved* | — |
 | 15 | FRR_AMOUNT_AVAILABLE | `frrAmountAvailable` |
+| 16 | FIRST_TRADE | `firstTrade` (nullable) |
 
 Source: docs.bitfinex.com/reference/ws-public-ticker (funding currency row).
+
+## `TradingTickerChannel` (`src/trading-ticker-channel.ts`) — WS `ticker` channel, trading pair
+
+Channel-scoped (no `SYMBOL`), so every field is at index-1 relative to
+`TradingTicker`. **Live-verified**: recorded `tBTCUSD` ticker frames
+(2026-09-25 and 2026-10-28) are 11 elements long and end in
+`1358182043000` at index 10 (`test/fixtures/trading-ticker-channel.json`).
+
+| Index | Field | Model field |
+|---|---|---|
+| 0 | BID | `bid` |
+| 1 | BID_SIZE | `bidSize` |
+| 2 | ASK | `ask` |
+| 3 | ASK_SIZE | `askSize` |
+| 4 | DAILY_CHANGE | `dailyChange` |
+| 5 | DAILY_CHANGE_RELATIVE | `dailyChangePerc` |
+| 6 | LAST_PRICE | `lastPrice` |
+| 7 | VOLUME | `volume` |
+| 8 | HIGH | `high` |
+| 9 | LOW | `low` |
+| 10 | FIRST_TRADE | `firstTrade` (nullable) |
+
+Source: docs.bitfinex.com/reference/ws-public-ticker (trading pair row).
+
+## `Liquidations` (`src/liquidations.ts`) — REST `GET /v2/liquidations/hist`
+
+**Live-verified** (`test/fixtures/liquidations.json`, recorded 2026-10-28).
+The response wraps every row one level deeper than other collections —
+`[[["pos", ...]], [["pos", ...]], ...]` — and `Liquidations.unserialize()` /
+`validate()` peel that level off, so a full response decodes to one object
+per row. `isMatch` / `isMarketSold` are the wire 0/1 and stay numbers (no
+`boolFields`), so they validate as 0 or 1, not as booleans.
+
+| Index | Field | Model field | Status |
+|---|---|---|---|
+| 0 | `"pos"` | — | constant tag |
+| 1 | POS_ID | `posId` | pre-existing |
+| 2 | MTS | `mtsUpdated` | pre-existing |
+| 3 | *placeholder* | — | — |
+| 4 | SYMBOL | `symbol` | pre-existing |
+| 5 | AMOUNT | `amount` | pre-existing |
+| 6 | BASE_PRICE | `basePrice` | pre-existing |
+| 7 | *placeholder* | — | — |
+| 8 | IS_MATCH | `isMatch` | pre-existing (validator fixed: 0/1, was `boolValidator`) |
+| 9 | IS_MARKET_SOLD | `isMarketSold` | pre-existing (validator fixed: 0/1, was `boolValidator`) |
+| 10 | *placeholder* | — | — |
+| 11 | PRICE_ACQUIRED (docs name) | `liquidationPrice` | **added 2026-10-28** (nullable; `null` on live rows; named after upstream bitfinexcom/bfx-api-node-models PR #59) |
+
+Source: docs.bitfinex.com/reference/rest-public-liquidations.
+
+## `PublicTrade` (`src/public-trade.ts`) — REST `trades/{symbol}/hist`, WS `trades`
+
+Two layouts, chosen by the **width of a row** (for a collection, its first
+row), never by the collection's length: a 5-row trading snapshot used to
+decode with the funding layout until 2026-10-28. **Live-verified**
+(`test/fixtures/public-trades-trading.json`,
+`test/fixtures/public-trades-funding.json`, both 5-row `limit=5` captures).
+
+| Layout | Width | Index → model field |
+|---|---|---|
+| Trading pair (`t…`) | 4 | 0 ID `id`, 1 MTS `mts`, 2 AMOUNT `amount`, 3 PRICE `price` |
+| Funding currency (`f…`) | 5 | 0 ID `id`, 1 MTS `mts`, 2 AMOUNT `amount`, 3 RATE `rate`, 4 PERIOD `period` |
+
+Source: docs.bitfinex.com/reference/rest-public-trades and ws-public-trades.
+
+## Order book (`src/order-book.ts`) — REST `book/{symbol}/{P0|R0}`, WS `book`
+
+Rows stay positional arrays; the model tells trading from funding by row
+width (4 = funding). Checksum semantics are documented with the order-book
+fixes, not here.
+
+| Precision | Layout | Width | Index → field |
+|---|---|---|---|
+| P0 (aggregated) | Trading | 3 | 0 PRICE, 1 COUNT, 2 AMOUNT |
+| P0 (aggregated) | Funding | 4 | 0 RATE, 1 PERIOD, 2 COUNT, 3 AMOUNT |
+| R0 (raw) | Trading | 3 | 0 ORDER_ID, 1 PRICE, 2 AMOUNT |
+| R0 (raw) | Funding | 4 | 0 OFFER_ID, 1 PERIOD, 2 RATE, 3 AMOUNT |
+
+Source: docs.bitfinex.com/reference/rest-public-book, ws-public-books and
+ws-public-raw-books.
 
 ## Other channels (verified against docs.bitfinex.com, not modified in PR-1)
 
@@ -139,7 +231,12 @@ placedId:25, routing:28, meta:31`. No gap found.
 Matches docs.bitfinex.com/reference/rest-auth-funding-offers: `id:0,
 symbol:1, mtsCreate:2, mtsUpdate:3, amount:4, amountOrig:5, type:6,
 flags:9, status:10, rate:14, period:15, notify:16, hidden:17, renew:19,
-rateReal:20`. No gap found.
+rateReal:20`. No index gap. Validators fixed 2026-10-28
+(models-fundingoffer-validate-01): `validate()` carried validators for
+`mtsOpening`, `mtsLastPayout` and `noClose` — FundingCredit/FundingLoan
+fields with no slot in an offer row — so every array input failed with "no
+field index declared". They are gone, and `rateReal` (a documented
+placeholder sent as `null`) is nullable.
 
 ### `FundingCredit` (`src/funding-credit.ts`) / `FundingLoan` (`src/funding-loan.ts`)
 
@@ -167,7 +264,32 @@ authenticated ledger response before relying on index 2.
 
 Matches docs.bitfinex.com/reference/rest-auth-trades: `id:0, symbol:1,
 mtsCreate:2, orderID:3, execAmount:4, execPrice:5, orderType:6,
-orderPrice:7, maker:8, fee:9, feeCurrency:10`. No gap found.
+orderPrice:7, maker:8, fee:9, feeCurrency:10, cid:11`.
+
+| Index | Field | Model field | Status |
+|---|---|---|---|
+| 3 | ORDER_ID | `orderID` | pre-existing (validator fixed 2026-10-28: a number, was `stringValidator`) |
+| 11 | CID | `cid` | **added 2026-10-28** (models-trade-cid-05; nullable — `null` for orders placed without a client id, absent on 11-element rows) |
+
+Trade rows are authenticated, so the tests use rows shaped per the docs page,
+not a recording.
+
+### `FundingTrade` (`src/funding-trade.ts`)
+
+docs.bitfinex.com/reference/rest-auth-funding-trades: `id:0, symbol:1,
+mtsCreate:2, offerID:3, amount:4, rate:5, period:6, maker:7`. `maker` is
+1 or null on the wire (ws-auth-funding-trades: "1 if true, null if false";
+the REST hist row sends a null placeholder) and stays a number (no
+`boolFields`); it validates as 1, 0 or null since
+2026-10-28 (was `boolValidator`, which rejected every real row).
+
+### `Wallet` / `WalletHist` — wallet types
+
+`WALLET_TYPES` (`src/data/wallet-types.ts`) lists `exchange`, `margin` and
+`funding` (the names Bitfinex serves today, docs.bitfinex.com/reference/
+rest-auth-wallets) plus the legacy `trading` and `deposit`, which
+`WalletHist.type` keeps exposing. Before 2026-10-28 `margin` and `funding`
+wallets failed `validate()`.
 
 ### `Position` (`src/position.ts`)
 
@@ -183,7 +305,8 @@ consistent with the sibling models above).
 
 REST/WS trading-pair ticker. **Live-verified** against a real `tBTCUSD`
 capture: `symbol:0, bid:1, bidSize:2, ask:3, askSize:4, dailyChange:5,
-dailyChangePerc:6, lastPrice:7, volume:8, high:9, low:10`. Matches exactly.
-Note: REST also returns `FIRST_TRADE` at index 11 (`1358182043000` in the
-live capture) — not modeled, same class of gap as `FundingTicker.firstTrade`
-pre-fix, but out of PR-1 scope (only the funding-ticker family was named).
+dailyChangePerc:6, lastPrice:7, volume:8, high:9, low:10, firstTrade:11`.
+`FIRST_TRADE` (index 11, `1358182043000` in the live capture) was appended
+by Bitfinex on 2026-09-23 and is modeled as a nullable `firstTrade`; the WS
+`ticker` push carries the same value at index 10 (`TradingTickerChannel`
+above).
