@@ -4,7 +4,7 @@ import { amountValidator } from './validators/amount.js'
 import { flagValidator } from './validators/flag.js'
 import { nullable } from './validators/nullable.js'
 import { priceValidator } from './validators/price.js'
-import { symbolValidator } from './validators/symbol.js'
+import { fundingSymbolValidator } from './validators/funding-symbol.js'
 import { Model } from './model.js'
 
 const fields = {
@@ -32,7 +32,7 @@ export class FundingTrade extends Model {
       data, fields,
       validators: {
         id: numberValidator,
-        symbol: symbolValidator,
+        symbol: fundingSymbolValidator,
         mtsCreate: dateValidator,
         offerID: numberValidator,
         amount: amountValidator,

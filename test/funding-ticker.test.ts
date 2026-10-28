@@ -28,16 +28,11 @@ test('FundingTicker — bidPeriod/bidSize and askPeriod/askSize are not swapped 
 })
 
 test('FundingTicker — frr is a rate (number), not a boolean (regression)', () => {
-  // NOTE: FundingTicker.validate() on the full fixture still fails on the
-  // `symbol` field — src/data/symbols.ts is a stale trading-pairs-only
-  // snapshot with zero funding-currency (f-prefixed) entries. That gap
-  // predates and is unrelated to this PR's scope (StatusMessagesDeriv +
-  // funding-ticker/funding-channel models); flagged as a follow-up, not
-  // fixed here. So this asserts the frr validator itself, not full validate().
+  // The full recorded row validates now that `symbol` is checked as a funding
+  // symbol by format (it used to fail on the stale data/symbols.ts list).
   const result = FundingTicker.unserialize(fixture.payload) as Record<string, unknown>
   assert.equal(result.frr, 0.0003708931506849315)
-  const err = FundingTicker.validate(fixture.payload)
-  assert.match((err as Error).message, /^symbol:/, 'only the known-gap symbol field should fail')
+  assert.equal(FundingTicker.validate(fixture.payload), null)
 })
 
 test('FundingTicker — frrAmountAvailable and firstTrade complete the REST array', () => {

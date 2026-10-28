@@ -1,7 +1,7 @@
 import { numberValidator } from './validators/number.js'
 import { amountValidator } from './validators/amount.js'
 import { priceValidator } from './validators/price.js'
-import { symbolValidator } from './validators/symbol.js'
+import { fundingSymbolValidator } from './validators/funding-symbol.js'
 import { dateValidator } from './validators/date.js'
 import { nullable } from './validators/nullable.js'
 import { Model } from './model.js'
@@ -47,7 +47,7 @@ export class FundingTicker extends Model {
     return super.validate({
       data, fields,
       validators: {
-        symbol: symbolValidator,
+        symbol: fundingSymbolValidator,
         frr: numberValidator,
         bid: priceValidator,
         bidPeriod: numberValidator,

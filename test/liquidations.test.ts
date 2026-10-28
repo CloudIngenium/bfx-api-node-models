@@ -61,20 +61,18 @@ describe('Liquidations: the [[row]] REST wrapping', () => {
 })
 
 describe('Liquidations: validate() on the audited fields', () => {
-  // The recorded rows are all tDOGEF0:USTF0, which the static data/symbols.ts
-  // snapshot does not list (the known symbols-freshness gap in
-  // docs/positional-index-truth-table.md). Swapping ONLY the symbol isolates
-  // the fields this audit item is about; every other value is recorded.
-  const listed = (row: unknown[]): unknown[] => { const r = [...row]; r[4] = 'tBTCUSD'; return r }
-
-  test('with a listed symbol every recorded row validates, wrapped or not (0/1 flags, null liquidationPrice)', () => {
-    assert.equal(Liquidations.validate(rows.map(listed)), null)
-    assert.equal(Liquidations.validate(rows.map((r) => [listed(r)])), null)
+  // The recorded rows are all tDOGEF0:USTF0, a derivative pair the old static
+  // data/symbols.ts never listed; symbolValidator now checks format, so the
+  // rows validate exactly as recorded.
+  test('every recorded row validates unmodified, wrapped or not (0/1 flags, null liquidationPrice)', () => {
+    assert.equal(Liquidations.validate(rows), null)
+    assert.equal(Liquidations.validate(rows.map((r) => [r])), null)
   })
 
-  test('unmodified recorded rows still fail, on symbol only (known symbols-freshness gap)', () => {
+  test('a malformed symbol is still rejected, on symbol', () => {
     for (const row of rows) {
-      assert.match(String(Liquidations.validate(row)), /^Error: symbol:/)
+      const bad = [...row]; bad[4] = 'DOGEF0:USTF0'
+      assert.match(String(Liquidations.validate(bad)), /^Error: symbol:/)
     }
   })
 
@@ -85,14 +83,14 @@ describe('Liquidations: validate() on the audited fields', () => {
   })
 
   test('isMatch / isMarketSold outside 0/1 are rejected', () => {
-    const bad = listed(rows[0]); bad[8] = 2
+    const bad = [...rows[0]]; bad[8] = 2
     assert.match(String(Liquidations.validate(bad)), /^Error: isMatch:/)
-    const bad2 = listed(rows[0]); bad2[9] = true
+    const bad2 = [...rows[0]]; bad2[9] = true
     assert.match(String(Liquidations.validate(bad2)), /^Error: isMarketSold:/)
   })
 
   test('a negative liquidationPrice is rejected', () => {
-    const bad = listed(rows[0]); bad[11] = -1
+    const bad = [...rows[0]]; bad[11] = -1
     assert.match(String(Liquidations.validate(bad)), /^Error: liquidationPrice:/)
   })
 })
