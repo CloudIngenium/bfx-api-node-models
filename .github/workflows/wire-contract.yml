@@ -22,8 +22,12 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      # Every test file the live job runs, and everything those files read: a PR that
+      # only re-records conf-symbol-lists.json must still be checked against the exchange.
       - 'test/wire-contract.test.ts'
+      - 'test/symbol-validators.test.ts'
       - 'test/fixtures/**'
+      - 'test/recordings/**'
       - 'src/**'
       - '.github/workflows/wire-contract.yml'
 

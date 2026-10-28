@@ -51,8 +51,10 @@ export class Trade extends Model {
         orderType: (v: unknown) => stringValidator(v as string, Object.values(Order.type)),
         orderPrice: priceValidator,
         maker: boolValidator,
-        fee: numberValidator,
-        feeCurrency: currencyValidator,
+        // A `te` (trade executed) row carries FEE and FEE_CURRENCY as null: the fee
+        // arrives on the matching `tu` (trade update). Both are nullable for that reason.
+        fee: nullable(numberValidator),
+        feeCurrency: nullable(currencyValidator),
         cid: nullable(numberValidator)
       }
     })
