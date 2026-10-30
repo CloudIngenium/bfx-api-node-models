@@ -119,7 +119,10 @@ jobs:
           # `npm pack --json` prints an array on some npm versions and an object keyed by
           # package name on others (astro-shared publish run 39768591798).
           tarball=$(jq -er 'if type == "array" then .[0] elif has("filename") then . else first(.[] | objects) end | .filename | strings' "$RUNNER_TEMP/npm-pack.json")
-          tar -tf "$tarball_dir/$tarball" | grep -qx 'package/package.json'
+          # List to a file first: `grep -q` exits on the first match, and under pipefail
+          # the SIGPIPE that stops `tar` fails the step (bfx-api-node-rest replay run 41004451673).
+          tar -tf "$tarball_dir/$tarball" > "$RUNNER_TEMP/tar-contents.txt"
+          grep -qx 'package/package.json' "$RUNNER_TEMP/tar-contents.txt"
 
   # No package-source dispatch job here, unlike bfx-api-node-rest and bitfinex-api-node.
   # That job mints the org automation App key, which must run on an on-prem VM. This repo
