@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: CloudIngenium/ci-actions/setup-node-pnpm@287499b05159cce6e5862d677df4b5d1a666a738
         with:
           node-version: 24
@@ -34,6 +34,9 @@ jobs:
       - run: pnpm run build
       - run: pnpm run lint
       - run: pnpm test
+      # The committed package-source catalog must name this exact version, or the
+      # Knowledge-Hub event after publish would describe another release.
+      - run: pnpm run package-source:check
 
       # A tag is a human-typed string; package.json is what actually gets
       # published. Publishing a v10.2.0 tag that carries 10.2.1 in the manifest
@@ -64,7 +67,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: CloudIngenium/ci-actions/setup-node-pnpm@287499b05159cce6e5862d677df4b5d1a666a738
         with:
           node-version: 24
@@ -72,8 +75,55 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm run build
+      - name: Verify packed artifact in an external consumer
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          artifact_dir="$RUNNER_TEMP/package-artifact"
+          consumer_dir="$RUNNER_TEMP/package-consumer"
+          rm -rf "$artifact_dir" "$consumer_dir"
+          mkdir -p "$artifact_dir" "$consumer_dir"
+          pnpm pack --pack-destination "$artifact_dir"
+          tarball=$(find "$artifact_dir" -maxdepth 1 -name '*.tgz' -print -quit)
+          test -n "$tarball"
+          package_name=$(node -p "require('./package.json').name")
+          cd "$consumer_dir"
+          npm init -y >/dev/null
+          npm install "$tarball" --ignore-scripts --no-audit --no-fund
+          PACKAGE_NAME="$package_name" node --input-type=module -e "
+            const exported = await import(process.env.PACKAGE_NAME)
+            if (Object.keys(exported).length === 0) throw new Error('the packed artifact exports nothing')
+          "
       # --no-git-checks: pnpm otherwise refuses to publish from a detached tag
       # checkout. Auth comes from the .npmrc actions/setup-node wrote.
       - run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify published registry tarball
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          spec="$name@$version"
+          observed=$(npm view "$spec" version)
+          [ "$observed" = "$version" ]
+          tarball_dir="$RUNNER_TEMP/registry-tarball"
+          rm -rf "$tarball_dir"
+          mkdir -p "$tarball_dir"
+          npm pack "$spec" --ignore-scripts --json --pack-destination "$tarball_dir" > "$RUNNER_TEMP/npm-pack.json"
+          # `npm pack --json` prints an array on some npm versions and an object keyed by
+          # package name on others (astro-shared publish run 39768591798).
+          tarball=$(jq -er 'if type == "array" then .[0] elif has("filename") then . else first(.[] | objects) end | .filename | strings' "$RUNNER_TEMP/npm-pack.json")
+          tar -tf "$tarball_dir/$tarball" | grep -qx 'package/package.json'
+
+  # No package-source dispatch job here, unlike bfx-api-node-rest and bitfinex-api-node.
+  # That job mints the org automation App key, which must run on an on-prem VM. This repo
+  # is PUBLIC, and every org runner group sets allows_public_repositories=false, so a
+  # self-hosted job here would queue forever (test/ci/required-check-lanes.test.ts).
+  # standards/generated/package-source.json is still committed and checked, so
+  # Knowledge-Hub can ingest this release once a sanctioned sender exists.

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "cloudingenium.package-source/v1",
+  "producer": "bfx-api-node-models",
+  "publishedAt": "2026-10-30T03:36:05.927Z",
+  "packages": [
+    {
+      "name": "@cloudingenium/bfx-api-node-models",
+      "version": "11.0.0",
+      "ecosystem": "npm",
+      "owner": "Trading",
+      "maturity": "stable",
+      "compatibility": {
+        "node": ">=24.0.0"
+      },
+      "checks": [
+        "build",
+        "lint",
+        "test",
+        "package-artifact",
+        "registry-tarball"
+      ],
+      "expectedConsumers": [
+        "BfxPingPongBot",
+        "bfx-api-node-rest",
+        "bitfinex-api-node"
+      ]
+    }
+  ]
+}

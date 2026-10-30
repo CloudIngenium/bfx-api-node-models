@@ -25,7 +25,11 @@ npm run lint:fix # oxlint auto-fix
 Push a `v<version>` tag matching `package.json`; `.github/workflows/publish.yml`
 runs the full suite, refuses a tag whose version disagrees with the manifest,
 and publishes to GitHub Packages. **Bump the version in the PR, tag after it
-merges** — never publish by hand.
+merges** — never publish by hand. Run `pnpm package-source:generate` after the
+bump and commit `standards/generated/package-source.json` with it: CI refuses a
+stale catalog. This repo is public, so it has no self-hosted runner to send
+Knowledge-Hub a `package-source-published` event; the shared drain moves
+consumers to a new release once it is 72 h old.
 
 That workflow did not exist until 10.2.0: 10.0.0–10.1.1 were published manually,
 so master could sit several merged PRs ahead of what consumers on `^10.1.1`
