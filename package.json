@@ -26,7 +26,9 @@
     "lint": "oxlint --max-warnings 0",
     "lint:fix": "oxlint --fix",
     "test": "npm run build && node --test --experimental-test-coverage --test-coverage-lines=94 --test-coverage-branches=87 --test-coverage-functions=94 'test/**/*.test.ts'",
-    "prepublishOnly": "npm run build"
+    "package-source:generate": "node scripts/generate-package-source.mjs",
+    "package-source:check": "node scripts/generate-package-source.mjs --check",
+    "prepublishOnly": "npm run build && npm run package-source:check"
   },
   "repository": {
     "type": "git",
