@@ -61,13 +61,13 @@
   },
   "devDependencies": {
     "@cloudingenium/oxlint-config": "^1.2.0",
-    "@types/node": "^26.1.1",
-    "oxlint": "^1.88.0",
-    "oxlint-tsgolint": "^7.0.2004",
+    "@types/node": "^26.6.6",
+    "oxlint": "^1.92.0",
+    "oxlint-tsgolint": "^7.0.2006",
     "typescript": "~7.0.2"
   },
   "publishConfig": {
     "@cloudingenium:registry": "https://npm.pkg.github.com"
   },
-  "packageManager": "pnpm@12.15.0"
+  "packageManager": "pnpm@12.18.0"
 }
