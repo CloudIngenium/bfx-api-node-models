@@ -48,7 +48,7 @@ npm test        # Build + run tests with coverage
 npm run lint    # oxlint
 ```
 
-Requires Node.js >= 24.0.0 and TypeScript ~7.0.
+Requires Node.js >= 26.0.0 and TypeScript ~7.0.
 
 ## License
 

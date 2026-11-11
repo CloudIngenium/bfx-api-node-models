@@ -4,7 +4,7 @@
   "description": "TypeScript models for the Bitfinex API — CloudIngenium modernized fork",
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=26.0.0"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

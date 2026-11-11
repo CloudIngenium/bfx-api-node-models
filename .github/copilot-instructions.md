@@ -4,9 +4,9 @@
 
 ## Build and Test
 
-- Node ≥ 24, TypeScript ~7.0, ESM-only.
+- Node ≥ 26, TypeScript ~7.0, ESM-only.
 - `npm run build` — clean + `tsc` to `dist/`.
-- `npm test` — builds, then runs the real suite: `node --test --experimental-test-coverage` over `test/**/*.test.ts`, failing below the `--test-coverage-lines/branches/functions` floors in the `test` script. Tests are TypeScript and import the **built `dist/`**, never `src/` — zero test-framework deps, just Node 24's `node:test`/`node:assert`. `test/model-surface.test.ts` imports the package index, so every module is measured.
+- `npm test` — builds, then runs the real suite: `node --test --experimental-test-coverage` over `test/**/*.test.ts`, failing below the `--test-coverage-lines/branches/functions` floors in the `test` script. Tests are TypeScript and import the **built `dist/`**, never `src/` — zero test-framework deps, just Node 26's `node:test`/`node:assert`. `test/model-surface.test.ts` imports the package index, so every module is measured.
 - `npm run lint` / `npm run lint:fix` — oxlint (`.oxlintrc.json`, `@cloudingenium/oxlint-config`), type-aware through oxlint-tsgolint.
 - Published as `@cloudingenium/bfx-api-node-models` on GitHub Packages (internal visibility).
 
