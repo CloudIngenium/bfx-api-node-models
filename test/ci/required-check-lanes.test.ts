@@ -54,7 +54,7 @@ function jobLane (yaml: string, job: string): string | null {
 }
 
 // The repo's required contexts, per the branch-protection ruleset on master.
-// `test (24)` is the matrix job's rendered name; `build-and-test` mirrors it.
+// `test (26)` is the matrix job's rendered name; `build-and-test` mirrors it.
 const REQUIRED_JOBS = ['test', 'build-and-test']
 
 // `self-hosted` is the label that makes a job unroutable HERE. A hosted label anywhere is

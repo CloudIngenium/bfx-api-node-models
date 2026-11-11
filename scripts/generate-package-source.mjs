@@ -39,7 +39,7 @@ export function buildPackageSource (pkg, { publishedAt = new Date().toISOString(
       owner: 'Trading',
       maturity: 'stable',
       compatibility: {
-        node: pkg.engines?.node ?? '>=24.0.0'
+        node: pkg.engines?.node ?? '>=26.0.0'
       },
       checks: [...CHECKS],
       expectedConsumers: [...EXPECTED_CONSUMERS]

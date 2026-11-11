@@ -10,7 +10,7 @@
       "owner": "Trading",
       "maturity": "stable",
       "compatibility": {
-        "node": ">=24.0.0"
+        "node": ">=26.0.0"
       },
       "checks": [
         "build",

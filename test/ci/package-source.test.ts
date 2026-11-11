@@ -31,7 +31,7 @@ describe('package-source catalog', () => {
 
   it('rejects a catalog left behind by a version bump', () => {
     const dir = mkdtempSync(join(tmpdir(), 'package-source-'))
-    const pkg = { name: '@cloudingenium/bfx-api-node-models', version: '1.0.0', engines: { node: '>=24.0.0' } }
+    const pkg = { name: '@cloudingenium/bfx-api-node-models', version: '1.0.0', engines: { node: '>=26.0.0' } }
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ ...pkg, version: '1.1.0' }))
     writeFileSync(join(dir, 'source.json'), JSON.stringify(buildPackageSource(pkg, { publishedAt: '2026-10-30T00:00:00.000Z' })))
     assert.throws(
