@@ -24,7 +24,7 @@ jobs:
         node-version: [26]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
-      - uses: CloudIngenium/ci-actions/setup-node-pnpm@287499b05159cce6e5862d677df4b5d1a666a738
+      - uses: CloudIngenium/ci-actions/setup-node-pnpm@5c9518a1b4dde6032f6ce6c9816d925fed869a81
         with:
           node-version: ${{ matrix.node-version }}
       - run: pnpm install --frozen-lockfile
