@@ -60,7 +60,7 @@
     "crc-32": "^1.2.2"
   },
   "devDependencies": {
-    "@cloudingenium/oxlint-config": "^1.2.0",
+    "@cloudingenium/oxlint-config": "^1.2.1",
     "@types/node": "^26.6.6",
     "oxlint": "^1.93.0",
     "oxlint-tsgolint": "^7.0.2007",

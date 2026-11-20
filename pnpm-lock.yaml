@@ -61,8 +61,8 @@ importers:
         version: 1.2.2
     devDependencies:
       '@cloudingenium/oxlint-config':
-        specifier: ^1.2.0
-        version: 1.2.0(oxlint-tsgolint@7.0.2007)(oxlint@1.93.0(oxlint-tsgolint@7.0.2007))
+        specifier: ^1.2.1
+        version: 1.2.1(oxlint-tsgolint@7.0.2007)(oxlint@1.93.0(oxlint-tsgolint@7.0.2007))
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -78,8 +78,8 @@ importers:
 
 packages:
 
-  '@cloudingenium/oxlint-config@1.2.0':
-    resolution: {integrity: sha512-zmHHwFObprgag3mQuDde8fGznYDkCChbAmlkTBNlgVw76Hc1YJN4bp6zTxtxd1gmwV9aRe4VAQwdc4BjzsWd1Q==, tarball: https://npm.pkg.github.com/download/@cloudingenium/oxlint-config/1.2.0/3503ec41c8b92c7d19211defebac7e9940346382}
+  '@cloudingenium/oxlint-config@1.2.1':
+    resolution: {integrity: sha512-eEOMYCFtgARA0HRZl7TH58LMP7npGdfFtuzBvURkyQ/Q1j48x6NBKG+peXup0K++xjC83tfbBPL44Q2XIFyCJA==, tarball: https://npm.pkg.github.com/download/@cloudingenium/oxlint-config/1.2.1/895087cf44b610d1379b47a11b337562676b024e}
     peerDependencies:
       oxlint: ^1.88.0
       oxlint-tsgolint: ^7.0.2004
@@ -394,7 +394,7 @@ packages:
 
 snapshots:
 
-  '@cloudingenium/oxlint-config@1.2.0(oxlint-tsgolint@7.0.2007)(oxlint@1.93.0(oxlint-tsgolint@7.0.2007))':
+  '@cloudingenium/oxlint-config@1.2.1(oxlint-tsgolint@7.0.2007)(oxlint@1.93.0(oxlint-tsgolint@7.0.2007))':
     dependencies:
       oxlint: 1.93.0(oxlint-tsgolint@7.0.2007)
       oxlint-tsgolint: 7.0.2007
